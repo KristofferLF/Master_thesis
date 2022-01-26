@@ -1,9 +1,29 @@
 import csv
+import json
 import numpy as np
+
+def readFromJSON(fileName):
+    """
+    Reads files from a JSON-file and returns the values read from the files.
+    Input: 'fileName' String Filename (must be '.csv')
+    Output: 'values' List of values read from the csv-file
+    """
+    
+    try:    
+        jsonFile = open(fileName)
+    except:
+        raise Exception("Could not open file. Ensure filename is correct.")
+    
+    jsonData = json.load(jsonFile)
+        
+    for line in jsonData:
+        print(line)
+        
+    jsonFile.close()
 
 def readFromCSV(fileName):
     """
-    Reads files from a csv-file and returns the values read from the files.
+    Reads files from a CSV-file and returns the values read from the files.
     Input: 'fileName' String Filename (must be '.csv')
     Output: 'values' List of values read from the csv-file
     """
