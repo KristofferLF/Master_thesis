@@ -1,0 +1,16 @@
+QLabel {
+}
+
+QPushButton {
+}
+
+QLabel#greeting {
+    font-size: 30px;
+}
+
+QLabel#prompt {
+    font-size: 15px;
+}
+
+QLabel#orLabel {
+}
