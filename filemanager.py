@@ -15,11 +15,28 @@ def readFromJSON(fileName):
         raise Exception("Could not open file. Ensure filename is correct.")
     
     jsonData = json.load(jsonFile)
-        
-    for line in jsonData:
-        print(line)
+    
+    values = []
+    
+    #values.append(jsonData['additional'][0]['gasconstant'])
+    values.append(jsonData['additional'][1]['mass'])
+    values.append(jsonData['temperature'][0]['hot'])
+    values.append(jsonData['temperature'][1]['regenerator'])
+    values.append(jsonData['temperature'][2]['cold'])
+    values.append(jsonData['volume'][0]['swept'])
+    values.append(jsonData['volume'][1]['regenerator'])
+    values.append(jsonData['volume'][2]['average'])
+    values.append(jsonData['area'][0]['piston'])
+    values.append(jsonData['area'][1]['cylinder'])
+    values.append(jsonData['additional'][2]['phaseangle'])
         
     jsonFile.close()
+    
+    print(values)
+    
+    return values
+
+# Remove the possibility to remove 'readFromCSV'?
 
 def readFromCSV(fileName):
     """

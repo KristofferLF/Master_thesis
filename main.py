@@ -6,7 +6,7 @@ from functools import partial
 from PySide2.QtMultimediaWidgets import QVideoWidget
 from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtCore import QUrl
-from filemanager import readFromCSV, writeValuesToCSV, writeResultsToCSV
+from filemanager import readFromJSON, readFromCSV, writeValuesToCSV, writeResultsToCSV
 from schmidt import schmidtAnalysis, plotSchmidtAnalysis
 import sys
 
@@ -69,6 +69,9 @@ class ManualInput(QDialog):
         self.continueButton = QPushButton("Continue")
         self.continueButton.setFixedSize(100, 50)
         self.continueButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.defaultButton = QPushButton("Default")
+        self.defaultButton.setFixedSize(100, 50)
+        self.defaultButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
         # Create form
         self.volume = QLabel("Volume [mm^3]")
@@ -162,6 +165,7 @@ class ManualInput(QDialog):
         layout.addWidget(QLabel(""), 15, 1, 1, 5)
         
         layout.addWidget(self.returnButton, 16, 1, 1, 1)
+        layout.addWidget(self.defaultButton, 16, 2, 1, 1)
         layout.addWidget(self.continueButton, 16, 3, 1, 1)
         
         # Set layout
@@ -169,12 +173,24 @@ class ManualInput(QDialog):
         
         # Connect buttons
         self.returnButton.clicked.connect(self.returnToIntro)
+        self.defaultButton.clicked.connect(self.useDefaultValues)
         self.continueButton.clicked.connect(self.continueToCalculation)
         
     def returnToIntro(self):
         self.intro = Intro(self)
         self.intro.show()
         self.hide()
+        
+    def useDefaultValues(self):
+        values = readFromJSON("assets/default.json")
+        
+        isApproved = self.checkValues(values)
+
+        if (isApproved):
+            writeValuesToCSV("inputValues", values)
+            self.stateVisualization = StateWindow(self)
+            self.stateVisualization.show()
+            self.hide()
         
     def continueToCalculation(self):
         valueList = [self.m, self.th, self.tr, self.tc, self.v_cyl, self.v_reg, self.v_c_avg, self.piston_rod_area, self.piston_cyl_area, self.beta]
