@@ -6,7 +6,7 @@ from functools import partial
 from PySide2.QtMultimediaWidgets import QVideoWidget
 from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtCore import QUrl
-from filemanager import readFromJSON, readFromCSV, writeValuesToCSV, writeResultsToCSV
+from filemanager import readFromJSON, writeToJSON, readFromCSV, writeToCSV, writeResultsToCSV
 from schmidt import schmidtAnalysis, plotSchmidtAnalysis
 import sys
 
@@ -129,6 +129,10 @@ class ManualInput(QDialog):
         self.m_prompt.setFixedSize(100, 30)
         self.m = QLineEdit()
         self.m.setFixedSize(100, 30)
+        self.gas_constant_prompt = QLabel("Gas constant:")
+        self.gas_constant_prompt.setFixedSize(100, 30)
+        self.gas_constant = QLineEdit()
+        self.gas_constant.setFixedSize(100, 30)
         
         # Create layout and add widgets
         layout = QGridLayout(window)
@@ -159,14 +163,16 @@ class ManualInput(QDialog):
         layout.addWidget(self.additional, 12, 0, 1, 5)
         layout.addWidget(self.m_prompt, 13, 1, 1, 1)
         layout.addWidget(self.m, 13, 3, 1, 1)
-        layout.addWidget(self.beta_prompt, 14, 1, 1, 1)
-        layout.addWidget(self.beta, 14, 3, 1, 1)
+        layout.addWidget(self.gas_constant_prompt, 14, 1, 1, 1)
+        layout.addWidget(self.gas_constant, 14, 3, 1, 1)
+        layout.addWidget(self.beta_prompt, 15, 1, 1, 1)
+        layout.addWidget(self.beta, 15, 3, 1, 1)
         
-        layout.addWidget(QLabel(""), 15, 1, 1, 5)
+        layout.addWidget(QLabel(""), 16, 1, 1, 5)
         
-        layout.addWidget(self.returnButton, 16, 1, 1, 1)
-        layout.addWidget(self.defaultButton, 16, 2, 1, 1)
-        layout.addWidget(self.continueButton, 16, 3, 1, 1)
+        layout.addWidget(self.returnButton, 17, 1, 1, 1)
+        layout.addWidget(self.defaultButton, 17, 2, 1, 1)
+        layout.addWidget(self.continueButton, 17, 3, 1, 1)
         
         # Set layout
         self.setLayout(layout)
@@ -187,13 +193,13 @@ class ManualInput(QDialog):
         isApproved = self.checkValues(values)
 
         if (isApproved):
-            writeValuesToCSV("inputValues", values)
+            writeToJSON("inputValues", values)
             self.stateVisualization = StateWindow(self)
             self.stateVisualization.show()
             self.hide()
         
     def continueToCalculation(self):
-        valueList = [self.m, self.th, self.tr, self.tc, self.v_cyl, self.v_reg, self.v_c_avg, self.piston_rod_area, self.piston_cyl_area, self.beta]
+        valueList = [self.gas_constant, self.m, self.th, self.tr, self.tc, self.v_cyl, self.v_reg, self.v_c_avg, self.piston_rod_area, self.piston_cyl_area, self.beta]
         values = []
 
         for item in valueList:
@@ -202,7 +208,7 @@ class ManualInput(QDialog):
         isApproved = self.checkValues(values)
 
         if (isApproved):
-            writeValuesToCSV("inputValues", values)
+            writeToJSON("inputValues", values)
             self.stateVisualization = StateWindow(self)
             self.stateVisualization.show()
             self.hide()
@@ -462,8 +468,8 @@ class ResultWindow(QDialog):
         layout = QGridLayout(window)
 
         # Calculate results
-        calculationValues = readFromCSV("assets/inputValues.csv")
-        print("These values were read from the CSV-file containing input-values:")
+        calculationValues = readFromJSON("assets/inputValues.json")
+        print("These values were read from the JSON-file containing input-values:")
         print(calculationValues)
         cycleAnalysis = schmidtAnalysis(calculationValues)
 

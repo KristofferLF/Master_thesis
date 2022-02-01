@@ -18,7 +18,7 @@ def readFromJSON(fileName):
     
     values = []
     
-    #values.append(jsonData['additional'][0]['gasconstant'])
+    values.append(jsonData['additional'][0]['gasconstant'])
     values.append(jsonData['additional'][1]['mass'])
     values.append(jsonData['temperature'][0]['hot'])
     values.append(jsonData['temperature'][1]['regenerator'])
@@ -37,6 +37,46 @@ def readFromJSON(fileName):
     return values
 
 # Remove the possibility to remove 'readFromCSV'?
+
+def writeToJSON(fileName, values):
+    """
+    Writes a matrix to a JSON-file with the fiven filename.
+    Input: 'fileName' String Filename (does not include '.json')
+    'values' List containing string values from GUI-input
+    """
+    try:
+        # Convert to dict?
+        gasConstant = str(values[0])
+        mass = str(values[1])
+        tHot = str(values[2])
+        tReg = str(values[3])
+        tCold = str(values[4])
+        sweptVol = str(values[5])
+        regVol = str(values[6])
+        avgVol = str(values[7])
+        rodArea = str(values[8])
+        cylArea = str(values[9])
+        phaseAngle = str(values[10])
+    except:
+        print("Missing required values.")
+    
+    jsonString = ("{\"volume\":[{\"swept\":" + sweptVol + 
+                  "},{\"regenerator\":" + regVol +
+                  "},{\"average\":" + avgVol +
+                  "}],\"area\":[{\"piston\":" + rodArea +
+                  "},{\"cylinder\":" + cylArea + 
+                  "}],\"temperature\":[{\"hot\":" + tHot +
+                  "},{\"regenerator\":" + tReg +
+                  "},{\"cold\":" + tCold +
+                  "}],\"additional\":[{\"gasconstant\":" + gasConstant +
+                  "},{\"mass\":" + mass +
+                  "},{\"phaseangle\":" + phaseAngle + "}]}")
+    try:    
+        with open("assets/" + fileName + ".json", 'w') as jsonFile:
+            print(fileName)
+            jsonFile.write(jsonString)
+    except:
+        print("Could not write to file. Ensure proper filename is given.")
 
 def readFromCSV(fileName):
     """
@@ -62,7 +102,7 @@ def readFromCSV(fileName):
     
     return values
 
-def writeValuesToCSV(fileName, values):
+def writeToCSV(fileName, values):
     """
     Writes a matrix to a csv-file with the fiven filename.
     Input: 'fileName' String Filename (does not include '.csv')

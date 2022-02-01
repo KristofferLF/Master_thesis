@@ -6,32 +6,32 @@ from matplotlib.backends.backend_pdf import PdfPages
 def schmidtAnalysis(values):
     """
     Performs a Schmidt-analysis and returns a matrix containing the results of the analysis.
-    Input: 'values' List of values used for calculation [m, Th_c, Tr_c, Tc_c, V_cyl, V_reg, V_c_avg, piston_rod_area, piston_cyl_area, phaseAngle_beta]
+    Input: 'values' List of values used for calculation [R, m, Th_c, Tr_c, Tc_c, V_cyl, V_reg, V_c_avg, piston_rod_area, piston_cyl_area, phaseAngle_beta]
     Output: 'cycleAnalysis' Matrix of results
     """
     # Constants
-    R = 2077        # [J/kg*K]
-    m = values[0]   # [kg]
+    R = values[0]   # [J/kg*K]
+    m = values[1]   # [kg]
 
     ## Temperature
-    Th_c = values[1]    # [C]
-    Tr_c = values[2]    # [C]
-    Tc_c = values[3]    # [C]
+    Th_c = values[2]    # [C]
+    Tr_c = values[3]    # [C]
+    Tc_c = values[4]    # [C]
     T_h = 273.15 + Th_c     # [K]
     T_r = 273.15 + Tr_c     # [K]
     T_c = 273.15 + Tc_c     # [K]
 
     ## Volume
-    V_cyl = values[4]       # [mm^3]
-    V_reg = values[5]       # [mm^3]
-    V_c_avg = values[6]     # [mm^3]
+    V_cyl = values[5]       # [mm^3]
+    V_reg = values[6]       # [mm^3]
+    V_c_avg = values[7]     # [mm^3]
 
     ## Area
-    piston_rod_area = values[7]  # [mm^2]
-    piston_cyl_area = values[8]  # [mm^2]
+    piston_rod_area = values[8]  # [mm^2]
+    piston_cyl_area = values[9]  # [mm^2]
 
     # Angles
-    beta = values[9]   # [degrees]
+    beta = values[10]   # [degrees]
     beta_rad = beta * 2 * np.pi / 360
 
     degree = 0
