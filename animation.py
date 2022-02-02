@@ -52,43 +52,74 @@ def mkVtkIdList(it):
     return vil
 
 
-def main():
+def animation():
     colors = vtkNamedColors()
 
     # x = array of 8 3-tuples of float representing the vertices of a cube:
-    cylinderPoints = [(0.0, 0.0, 0.0), (10.0, 0.0, 0.0), (10.0, 10.0, 0.0), (0.0, 10.0, 0.0),
-         (0.0, 0.0, 1.0), (10.0, 0.0, 1.0), (10.0, 10.0, 1.0), (0.0, 10.0, 1.0)]
+    bottomPlateVertices = [(0.0, 0.0, 0.0), (50.0, 0.0, 0.0), (50.0, 50.0, 0.0), (0.0, 50.0, 0.0),
+         (0.0, 0.0, 1.0), (50.0, 0.0, 1.0), (50.0, 50.0, 1.0), (0.0, 50.0, 1.0)]
 
     # pts = array of 6 4-tuples of vtkIdType (int) representing the faces
     #     of the cube in terms of the above vertices
-    pts = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4),
+    bottomPlateFaces = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4),
            (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+    
+    leftPlateVertices = [(0.0, 0.0, 1.0), (50.0, 0.0, 1.0), (50.0, 1.0, 1.0), (0.0, 1.0, 1.0),
+                         (0.0, 0.0, 50.0), (50.0, 0.0, 50.0), (50.0, 1.0, 50.0), (0.0, 1.0, 50.0)]
+    
+    leftPlateFaces = [(0, 4, 7, 3)]
 
     # We'll create the building blocks of polydata including data attributes.
-    cube = vtkPolyData()
-    points = vtkPoints()
-    polys = vtkCellArray()
-    scalars = vtkFloatArray()
+    bottomPlate = vtkPolyData()
+    bottomPlatePoints = vtkPoints()
+    bottomPlatePolys = vtkCellArray()
+    bottomPlateScalars = vtkFloatArray()
+    
+    # We'll create the building blocks of polydata including data attributes.
+    leftPlate = vtkPolyData()
+    leftPlatePoints = vtkPoints()
+    leftPlatePolys = vtkCellArray()
+    leftPlateScalars = vtkFloatArray()
 
     # Load the point, cell, and data attributes.
-    for i, xi in enumerate(cylinderPoints):
-        points.InsertPoint(i, xi)
-    for pt in pts:
-        polys.InsertNextCell(mkVtkIdList(pt))
-    for i, _ in enumerate(cylinderPoints):
-        scalars.InsertTuple1(i, i)
+    for i, xi in enumerate(bottomPlateVertices):
+        bottomPlatePoints.InsertPoint(i, xi)
+    for pt in bottomPlateFaces:
+        bottomPlatePolys.InsertNextCell(mkVtkIdList(pt))
+    for i, _ in enumerate(bottomPlateVertices):
+        bottomPlateScalars.InsertTuple1(i, i)
 
     # We now assign the pieces to the vtkPolyData.
-    cube.SetPoints(points)
-    cube.SetPolys(polys)
-    cube.GetPointData().SetScalars(scalars)
+    bottomPlate.SetPoints(bottomPlatePoints)
+    bottomPlate.SetPolys(bottomPlatePolys)
+    bottomPlate.GetPointData().SetScalars(bottomPlateScalars)
 
     # Now we'll look at it.
-    cubeMapper = vtkPolyDataMapper()
-    cubeMapper.SetInputData(cube)
-    cubeMapper.SetScalarRange(cube.GetScalarRange())
-    cubeActor = vtkActor()
-    cubeActor.SetMapper(cubeMapper)
+    bottomPlateMapper = vtkPolyDataMapper()
+    bottomPlateMapper.SetInputData(bottomPlate)
+    bottomPlateMapper.SetScalarRange(bottomPlate.GetScalarRange())
+    bottomPlateActor = vtkActor()
+    bottomPlateActor.SetMapper(bottomPlateMapper)
+    
+    # Load the point, cell, and data attributes.
+    for i, xi in enumerate(leftPlateVertices):
+        leftPlatePoints.InsertPoint(i, xi)
+    for pt in leftPlateFaces:
+        leftPlatePolys.InsertNextCell(mkVtkIdList(pt))
+    for i, _ in enumerate(leftPlateVertices):
+        leftPlateScalars.InsertTuple1(i, i)
+
+    # We now assign the pieces to the vtkPolyData.
+    leftPlate.SetPoints(leftPlatePoints)
+    leftPlate.SetPolys(leftPlatePolys)
+    leftPlate.GetPointData().SetScalars(leftPlateScalars)
+
+    # Now we'll look at it.
+    leftPlateMapper = vtkPolyDataMapper()
+    leftPlateMapper.SetInputData(leftPlate)
+    leftPlateMapper.SetScalarRange(leftPlate.GetScalarRange())
+    leftPlateActor = vtkActor()
+    leftPlateActor.SetMapper(leftPlateMapper)
 
     # The usual rendering stuff.
     camera = vtkCamera()
@@ -102,13 +133,14 @@ def main():
     iren = vtkRenderWindowInteractor()
     iren.SetRenderWindow(renWin)
 
-    renderer.AddActor(cubeActor)
+    renderer.AddActor(bottomPlateActor)
+    renderer.AddActor(leftPlateActor)
     renderer.SetActiveCamera(camera)
     renderer.ResetCamera()
     renderer.SetBackground(colors.GetColor3d("Cornsilk"))
 
     renWin.SetSize(600, 600)
-    renWin.SetWindowName("Cube")
+    renWin.SetWindowName("Stirling engine")
 
     # interact with data
     renWin.Render()
@@ -116,4 +148,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    animation()
