@@ -6,10 +6,23 @@ from functools import partial
 from PySide2.QtMultimediaWidgets import QVideoWidget
 from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtCore import QUrl
-from filemanager import readFromJSON, readFromCSV, writeValuesToCSV, writeResultsToCSV
+from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
 from schmidt import schmidtAnalysis, plotSchmidtAnalysis
 import sys
 
+def checkValues(values):
+    for value in values:
+        if (value is not None and value != ''):
+            try:    
+                fValue = float(value)
+                if (fValue < 0):
+                    return False
+            except:
+                return False
+        else:
+            return False
+
+    return True
 
 class Intro(QDialog):
     def __init__(self, parent=None):
@@ -20,26 +33,46 @@ class Intro(QDialog):
         # Create widgets
         self.greeting = QLabel("Welcome to the stirling engine calculator!")
         self.greeting.setAlignment(QtCore.Qt.AlignCenter)
-        self.greeting.setFixedSize(600, 50)
+        self.greeting.setFixedSize(750, 50)
         self.greeting.setObjectName("greeting")
-        self.prompt = QLabel("Please press the 'Manual input'-button to enter the input-values.")
-        self.prompt.setAlignment(QtCore.Qt.AlignCenter)
-        self.prompt.setFixedSize(600, 100)
-        self.prompt.setObjectName("prompt")
+        self.defaultOrCustomPrompt = QLabel("Please press the 'Default'-button for example values or the 'Custom'-button to use the custom JSON-file.")
+        self.defaultOrCustomPrompt.setAlignment(QtCore.Qt.AlignCenter)
+        self.defaultOrCustomPrompt.setFixedSize(750, 100)
+        self.defaultOrCustomPrompt.setObjectName("prompt")
+        self.orLabel = QLabel("or")
+        self.orLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.orLabel.setFixedSize(150, 50)
+        self.orLabel.setObjectName("prompt")
+        self.manualInputPrompt = QLabel("Press the 'Manual input'-button to manually enter values for calculation.")
+        self.manualInputPrompt.setAlignment(QtCore.Qt.AlignCenter)
+        self.manualInputPrompt.setFixedSize(750, 100)
+        self.manualInputPrompt.setObjectName("prompt")
         self.inputButton = QPushButton("Manual input")
-        self.inputButton.setFixedSize(100, 50)
+        self.inputButton.setFixedSize(150, 50)
         self.inputButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.defaultButton = QPushButton("Default")
+        self.defaultButton.setFixedSize(150, 50)
+        self.defaultButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.customButton = QPushButton("Custom")
+        self.customButton.setFixedSize(150, 50)
+        self.customButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
         # Create layout and add widgets
         layout = QGridLayout(window)
         layout.addWidget(self.greeting, 0, 0, 1, 5)
-        layout.addWidget(self.prompt, 1, 0, 1, 5)
-        layout.addWidget(self.inputButton, 2, 2, 1, 1)
+        layout.addWidget(self.defaultOrCustomPrompt, 1, 0, 1, 5)
+        layout.addWidget(self.defaultButton, 2, 1, 1, 1)
+        layout.addWidget(self.orLabel, 2, 2, 1, 1)
+        layout.addWidget(self.customButton, 2, 3, 1, 1)
+        layout.addWidget(self.manualInputPrompt, 3, 0, 1, 5)
+        layout.addWidget(self.inputButton, 4, 2, 1, 1)
         
         # Set layout
         self.setLayout(layout)
         
         # Connect button 
+        self.defaultButton.clicked.connect(self.useDefaultValues)
+        self.customButton.clicked.connect(self.useCustomValues)
         self.inputButton.clicked.connect(self.manualInput)
 
     # Method for navigation
@@ -49,6 +82,28 @@ class Intro(QDialog):
         self.manualInput.show()
         
         if self.isVisible():
+            self.hide()
+            
+    def useDefaultValues(self):
+        values = readFromJSON("assets/default.json")
+        
+        isApproved = checkValues(values)
+
+        if (isApproved):
+            writeToJSON("inputValues", values)
+            self.stateVisualization = StateWindow(self)
+            self.stateVisualization.show()
+            self.hide()
+            
+    def useCustomValues(self):
+        values = readFromJSON("assets/custom.json")
+        
+        isApproved = checkValues(values)
+
+        if (isApproved):
+            writeToJSON("inputValues", values)
+            self.stateVisualization = StateWindow(self)
+            self.stateVisualization.show()
             self.hide()
 
 
@@ -61,74 +116,75 @@ class ManualInput(QDialog):
         # Create widgets
         self.prompt = QLabel("Please enter the values below.")
         self.prompt.setAlignment(QtCore.Qt.AlignCenter)
-        self.prompt.setFixedSize(600, 100)
+        self.prompt.setFixedSize(750, 100)
         self.prompt.setObjectName("prompt")
         self.returnButton = QPushButton("Return")
-        self.returnButton.setFixedSize(100, 50)
+        self.returnButton.setFixedSize(150, 50)
         self.returnButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.continueButton = QPushButton("Continue")
-        self.continueButton.setFixedSize(100, 50)
+        self.continueButton.setFixedSize(150, 50)
         self.continueButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.defaultButton = QPushButton("Default")
-        self.defaultButton.setFixedSize(100, 50)
-        self.defaultButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
         # Create form
         self.volume = QLabel("Volume [mm^3]")
         self.volume.setAlignment(QtCore.Qt.AlignCenter)
-        self.volume.setFixedSize(600, 50)
+        self.volume.setFixedSize(750, 50)
         self.v_cyl_prompt = QLabel("Cylinder:")
-        self.v_cyl_prompt.setFixedSize(100, 30)
+        self.v_cyl_prompt.setFixedSize(150, 30)
         self.v_cyl = QLineEdit()
-        self.v_cyl.setFixedSize(100, 30)
+        self.v_cyl.setFixedSize(150, 30)
         self.v_reg_prompt = QLabel("Regenerator:")
-        self.v_reg_prompt.setFixedSize(100, 30)
+        self.v_reg_prompt.setFixedSize(150, 30)
         self.v_reg = QLineEdit()
-        self.v_reg.setFixedSize(100, 30)
+        self.v_reg.setFixedSize(150, 30)
         self.v_c_avg_prompt = QLabel("Cylinder average:")
-        self.v_c_avg_prompt.setFixedSize(100, 30)
+        self.v_c_avg_prompt.setFixedSize(150, 30)
         self.v_c_avg = QLineEdit()
-        self.v_c_avg.setFixedSize(100, 30)
+        self.v_c_avg.setFixedSize(150, 30)
 
         self.area = QLabel("Area [mm^2]")
         self.area.setAlignment(QtCore.Qt.AlignCenter)
-        self.area.setFixedSize(600, 50)
+        self.area.setFixedSize(750, 50)
         self.piston_rod_area_prompt = QLabel("Piston rod surface:")
-        self.piston_rod_area_prompt.setFixedSize(100, 30)
+        self.piston_rod_area_prompt.setFixedSize(150, 30)
         self.piston_rod_area = QLineEdit()
-        self.piston_rod_area.setFixedSize(100, 30)
+        self.piston_rod_area.setFixedSize(150, 30)
         self.piston_cyl_area_prompt = QLabel("Piston cylinder:")
-        self.piston_cyl_area_prompt.setFixedSize(100, 30)
+        self.piston_cyl_area_prompt.setFixedSize(150, 30)
         self.piston_cyl_area = QLineEdit()
-        self.piston_cyl_area.setFixedSize(100, 30)
+        self.piston_cyl_area.setFixedSize(150, 30)
         
         self.temperature = QLabel("Temperature [C]")
         self.temperature.setAlignment(QtCore.Qt.AlignCenter)
-        self.temperature.setFixedSize(600, 50)
+        self.temperature.setFixedSize(750, 50)
         self.th_prompt = QLabel("Hot side:")
-        self.th_prompt.setFixedSize(100, 30)
+        self.th_prompt.setFixedSize(150, 30)
         self.th = QLineEdit()
-        self.th.setFixedSize(100, 30)
+        self.th.setFixedSize(150, 30)
         self.tr_prompt = QLabel("Regenerator:")
-        self.tr_prompt.setFixedSize(100, 30)
+        self.tr_prompt.setFixedSize(150, 30)
         self.tr = QLineEdit()
-        self.tr.setFixedSize(100, 30)
+        self.tr.setFixedSize(150, 30)
         self.tc_prompt = QLabel("Cold side:")
-        self.tc_prompt.setFixedSize(100, 30)
+        self.tc_prompt.setFixedSize(150, 30)
         self.tc = QLineEdit()
-        self.tc.setFixedSize(100, 30)
+        self.tc.setFixedSize(150, 30)
         
         self.additional = QLabel("Additional values")
         self.additional.setAlignment(QtCore.Qt.AlignCenter)
-        self.additional.setFixedSize(600, 50)
-        self.beta_prompt = QLabel("Phase-angle beta:")
-        self.beta_prompt.setFixedSize(100, 30)
+        self.additional.setFixedSize(750, 50)
+        self.beta_prompt = QLabel("Phase-angle \u03B2:")
+        self.beta_prompt.setFixedSize(150, 30)
         self.beta = QLineEdit()
-        self.beta.setFixedSize(100, 30)
+        self.beta.setFixedSize(150, 30)
         self.m_prompt = QLabel("Mass:")
-        self.m_prompt.setFixedSize(100, 30)
+        self.m_prompt.setFixedSize(150, 30)
         self.m = QLineEdit()
-        self.m.setFixedSize(100, 30)
+        self.m.setFixedSize(150, 30)
+        self.gas_constant_prompt = QLabel("Gas constant:")
+        self.gas_constant_prompt.setFixedSize(150, 30)
+        self.gas_constant = QLineEdit()
+        self.gas_constant.setFixedSize(150, 30)
         
         # Create layout and add widgets
         layout = QGridLayout(window)
@@ -159,50 +215,39 @@ class ManualInput(QDialog):
         layout.addWidget(self.additional, 12, 0, 1, 5)
         layout.addWidget(self.m_prompt, 13, 1, 1, 1)
         layout.addWidget(self.m, 13, 3, 1, 1)
-        layout.addWidget(self.beta_prompt, 14, 1, 1, 1)
-        layout.addWidget(self.beta, 14, 3, 1, 1)
+        layout.addWidget(self.gas_constant_prompt, 14, 1, 1, 1)
+        layout.addWidget(self.gas_constant, 14, 3, 1, 1)
+        layout.addWidget(self.beta_prompt, 15, 1, 1, 1)
+        layout.addWidget(self.beta, 15, 3, 1, 1)
         
-        layout.addWidget(QLabel(""), 15, 1, 1, 5)
+        layout.addWidget(QLabel(""), 16, 1, 1, 5)
         
-        layout.addWidget(self.returnButton, 16, 1, 1, 1)
-        layout.addWidget(self.defaultButton, 16, 2, 1, 1)
-        layout.addWidget(self.continueButton, 16, 3, 1, 1)
+        layout.addWidget(self.returnButton, 17, 1, 1, 1)
+        layout.addWidget(self.continueButton, 17, 3, 1, 1)
         
         # Set layout
         self.setLayout(layout)
         
         # Connect buttons
         self.returnButton.clicked.connect(self.returnToIntro)
-        self.defaultButton.clicked.connect(self.useDefaultValues)
         self.continueButton.clicked.connect(self.continueToCalculation)
         
     def returnToIntro(self):
         self.intro = Intro(self)
         self.intro.show()
         self.hide()
-        
-    def useDefaultValues(self):
-        values = readFromJSON("assets/default.json")
-        
-        isApproved = self.checkValues(values)
-
-        if (isApproved):
-            writeValuesToCSV("inputValues", values)
-            self.stateVisualization = StateWindow(self)
-            self.stateVisualization.show()
-            self.hide()
-        
+    
     def continueToCalculation(self):
-        valueList = [self.m, self.th, self.tr, self.tc, self.v_cyl, self.v_reg, self.v_c_avg, self.piston_rod_area, self.piston_cyl_area, self.beta]
+        valueList = [self.gas_constant, self.m, self.th, self.tr, self.tc, self.v_cyl, self.v_reg, self.v_c_avg, self.piston_rod_area, self.piston_cyl_area, self.beta]
         values = []
 
         for item in valueList:
             values.append(item.text())
 
-        isApproved = self.checkValues(values)
+        isApproved = checkValues(values)
 
         if (isApproved):
-            writeValuesToCSV("inputValues", values)
+            writeToJSON("inputValues", values)
             self.stateVisualization = StateWindow(self)
             self.stateVisualization.show()
             self.hide()
@@ -210,21 +255,6 @@ class ManualInput(QDialog):
             self.manualInput = ManualInput(self)
             self.manualInput.show()
             self.hide()
-        
-    def checkValues(self, values):
-        for value in values:
-            if (value is not None and value != ''):
-                try:    
-                    fValue = float(value)
-                    if (fValue < 0):
-                        return False
-                except:
-                    return False
-            else:
-                return False
-
-        return True
-
 
 class StateWindow(QDialog):
     number = 1
@@ -462,8 +492,8 @@ class ResultWindow(QDialog):
         layout = QGridLayout(window)
 
         # Calculate results
-        calculationValues = readFromCSV("assets/inputValues.csv")
-        print("These values were read from the CSV-file containing input-values:")
+        calculationValues = readFromJSON("assets/inputValues.json")
+        print("These values were read from the JSON-file containing input-values:")
         print(calculationValues)
         cycleAnalysis = schmidtAnalysis(calculationValues)
 
