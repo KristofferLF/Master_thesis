@@ -56,8 +56,8 @@ def main():
     colors = vtkNamedColors()
 
     # x = array of 8 3-tuples of float representing the vertices of a cube:
-    x = [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (1.0, 1.0, 0.0), (0.0, 1.0, 0.0),
-         (0.0, 0.0, 1.0), (1.0, 0.0, 1.0), (1.0, 1.0, 1.0), (0.0, 1.0, 1.0)]
+    cylinderPoints = [(0.0, 0.0, 0.0), (10.0, 0.0, 0.0), (10.0, 10.0, 0.0), (0.0, 10.0, 0.0),
+         (0.0, 0.0, 1.0), (10.0, 0.0, 1.0), (10.0, 10.0, 1.0), (0.0, 10.0, 1.0)]
 
     # pts = array of 6 4-tuples of vtkIdType (int) representing the faces
     #     of the cube in terms of the above vertices
@@ -71,11 +71,11 @@ def main():
     scalars = vtkFloatArray()
 
     # Load the point, cell, and data attributes.
-    for i, xi in enumerate(x):
+    for i, xi in enumerate(cylinderPoints):
         points.InsertPoint(i, xi)
     for pt in pts:
         polys.InsertNextCell(mkVtkIdList(pt))
-    for i, _ in enumerate(x):
+    for i, _ in enumerate(cylinderPoints):
         scalars.InsertTuple1(i, i)
 
     # We now assign the pieces to the vtkPolyData.
