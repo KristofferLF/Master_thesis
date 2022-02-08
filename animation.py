@@ -30,9 +30,11 @@ def main():
     colors = vtkNamedColors()
     
     centerAxis = 100
+    centerPistonAxis = 225
     
     cylinderPoints = vtkPoints()
     displacerPoints = vtkPoints()
+    pistonPoints = vtkPoints()
     
     cylinderVertices = [(0, 0, 0), (300, 0, 0), (0, 10, 0),             # 0, 1, 2
                 (300, 10, 0), (0, 200, 0), (10, 200, 0),                # 3, 4, 5
@@ -50,17 +52,22 @@ def main():
                          (10, centerAxis + 25, 0), (140, centerAxis + 25, 0), (160, centerAxis + 25, 0),    # 3, 4, 5
                          (160, centerAxis + 175, 0), (140, centerAxis + 175, 0)]                            # 6, 7
     
+    pistonVertices = [(200, centerPistonAxis - 7.5, 0), (270, centerPistonAxis - 7.5, 0), (270, centerPistonAxis + 7.5, 0),
+                    (200, centerPistonAxis + 7.5, 0), (232.5, centerPistonAxis + 7.5, 0), (237.5, centerPistonAxis + 7.5, 0),
+                    (237.5, centerPistonAxis + 50, 0), (232.5, centerPistonAxis + 50, 0)]
+    
     for point in cylinderVertices:
         cylinderPoints.InsertNextPoint(point)
         
     for point in displacerVertices:
         displacerPoints.InsertNextPoint(point)
+        
+    for point in pistonVertices:
+        pistonPoints.InsertNextPoint(point)
 
-    # 'DarkSlateGray'
-
-    # Page 35
     cylinderFace = vtkCellArray()
     displacerFace = vtkCellArray()
+    pistonFace = vtkCellArray()
     
     cylinderFaces = [(0, 1, 3, 2), (0, 6, 5, 4), (7, 1, 8, 9),
            (4, 10, 11, 12), (13, 14, 15, 16), (17, 8, 18, 19),
@@ -69,11 +76,16 @@ def main():
     
     displacerFaces = [(0, 1, 2, 3), (4, 5, 6, 7)]
     
+    pistonFaces = [(0, 1, 2, 3), (4, 5, 6, 7)]
+    
     for pt in cylinderFaces:
         cylinderFace.InsertNextCell(mkVtkIdList(pt))
         
     for pt in displacerFaces:
         displacerFace.InsertNextCell(mkVtkIdList(pt))
+        
+    for pt in pistonFaces:
+        pistonFace.InsertNextCell(mkVtkIdList(pt))
 
     cylinderPolydata = vtkPolyData()
     cylinderPolydata.SetPoints(cylinderPoints)
@@ -82,6 +94,10 @@ def main():
     displacerPolydata = vtkPolyData()
     displacerPolydata.SetPoints(displacerPoints)
     displacerPolydata.SetPolys(displacerFace)
+    
+    pistonPolydata = vtkPolyData()
+    pistonPolydata.SetPoints(pistonPoints)
+    pistonPolydata.SetPolys(pistonFace)
 
     # CHANGE FROM GLYPHFILTER
     glyphFilter = vtkVertexGlyphFilter()
@@ -95,16 +111,25 @@ def main():
     displacerMapper = vtkPolyDataMapper2D()
     displacerMapper.SetInputData(displacerPolydata)
     displacerMapper.Update()
+    
+    pistonMapper = vtkPolyDataMapper2D()
+    pistonMapper.SetInputData(pistonPolydata)
+    pistonMapper.Update()
 
     cylinderActor = vtkActor2D()
     cylinderActor.SetMapper(cylinderMapper)
-    cylinderActor.GetProperty().SetColor(colors.GetColor3d('LightGrey'))
+    cylinderActor.GetProperty().SetColor(colors.GetColor3d('Grey'))
     cylinderActor.GetProperty().SetPointSize(8)
     
     displacerActor = vtkActor2D()
     displacerActor.SetMapper(displacerMapper)
     displacerActor.GetProperty().SetColor(colors.GetColor3d('SlateGray'))
     displacerActor.GetProperty().SetPointSize(8)
+    
+    pistonActor = vtkActor2D()
+    pistonActor.SetMapper(pistonMapper)
+    pistonActor.GetProperty().SetColor(colors.GetColor3d('SlateGray'))
+    pistonActor.GetProperty().SetPointSize(8)
 
     # Create a renderer, render window, and interactor
     renderer = vtkRenderer()
@@ -116,8 +141,9 @@ def main():
     # Add the actor to the scene
     renderer.AddActor(cylinderActor)
     renderer.AddActor(displacerActor)
+    renderer.AddActor(pistonActor)
     renderWindow.SetSize(300, 400)
-    renderer.SetBackground(colors.GetColor3d('Black'))
+    renderer.SetBackground(colors.GetColor3d('White'))
 
     renderWindow.SetWindowName('Animation of Stirling Engine')
 
