@@ -29,12 +29,16 @@ def mkVtkIdList(it):
 def main():
     colors = vtkNamedColors()
     
-    centerAxis = 100
+    centerCylinderAxis = 100
     centerPistonAxis = 225
     
     cylinderPoints = vtkPoints()
     displacerPoints = vtkPoints()
     pistonPoints = vtkPoints()
+    cylinderCompressionPoints = vtkPoints()
+    cylinderExpansionPoints = vtkPoints()
+    pistonCompressionPoints = vtkPoints()
+    pistonExpansionPoints = vtkPoints()
     
     cylinderVertices = [(0, 0, 0), (300, 0, 0), (0, 10, 0),             # 0, 1, 2
                 (300, 10, 0), (0, 200, 0), (10, 200, 0),                # 3, 4, 5
@@ -48,13 +52,13 @@ def main():
                 (140, 225, 0), (130, 225, 0), (170, 200, 0),            # 27, 28, 29
                 (170, 225, 0), (160, 225, 0)]                           # 30, 31
     
-    displacerVertices = [(10, centerAxis - 25, 0), (290, centerAxis - 25, 0), (290, centerAxis + 25, 0),    # 0, 1, 2
-                         (10, centerAxis + 25, 0), (140, centerAxis + 25, 0), (160, centerAxis + 25, 0),    # 3, 4, 5
-                         (160, centerAxis + 175, 0), (140, centerAxis + 175, 0)]                            # 6, 7
+    displacerVertices = [(10, centerCylinderAxis - 25, 0), (290, centerCylinderAxis - 25, 0), (290, centerCylinderAxis + 25, 0),    # 0, 1, 2
+                         (10, centerCylinderAxis + 25, 0), (140, centerCylinderAxis + 25, 0), (160, centerCylinderAxis + 25, 0),    # 3, 4, 5
+                         (160, centerCylinderAxis + 175, 0), (140, centerCylinderAxis + 175, 0)]                                    # 6, 7
     
-    pistonVertices = [(200, centerPistonAxis - 7.5, 0), (270, centerPistonAxis - 7.5, 0), (270, centerPistonAxis + 7.5, 0),
-                    (200, centerPistonAxis + 7.5, 0), (232.5, centerPistonAxis + 7.5, 0), (237.5, centerPistonAxis + 7.5, 0),
-                    (237.5, centerPistonAxis + 50, 0), (232.5, centerPistonAxis + 50, 0)]
+    pistonVertices = [(200, centerPistonAxis - 7.5, 0), (270, centerPistonAxis - 7.5, 0), (270, centerPistonAxis + 7.5, 0),     # 0, 1, 2
+                    (200, centerPistonAxis + 7.5, 0), (232.5, centerPistonAxis + 7.5, 0), (237.5, centerPistonAxis + 7.5, 0),   # 3, 4, 5
+                    (237.5, centerPistonAxis + 50, 0), (232.5, centerPistonAxis + 50, 0)]                                       # 6, 7
     
     for point in cylinderVertices:
         cylinderPoints.InsertNextPoint(point)
