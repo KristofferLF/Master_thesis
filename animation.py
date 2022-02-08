@@ -18,11 +18,6 @@ from vtkmodules.vtkRenderingCore import (
 
 def mkVtkIdList(it):
     """
-    Makes a vtkIdList from a Python iterable. I'm kinda surprised that
-     this is necessary, since I assumed that this kind of thing would
-     have been built into the wrapper and happen transparently, but it
-     seems not.
-
     :param it: A python iterable.
     :return: A vtkIdList
     """
@@ -33,9 +28,10 @@ def mkVtkIdList(it):
 
 def main():
     colors = vtkNamedColors()
-    points = vtkPoints()
     
-    vertices = [(0, 0, 0), (300, 0, 0), (0, 10, 0),             # 0, 1, 2
+    cylinderPoints = vtkPoints()
+    
+    cylinderVertices = [(0, 0, 0), (300, 0, 0), (0, 10, 0),     # 0, 1, 2
                 (300, 10, 0), (0, 200, 0), (10, 200, 0),        # 3, 4, 5
                 (10, 0, 0), (290, 0, 0), (300, 200, 0),         # 6, 7, 8
                 (290, 200, 0), (140, 200, 0), (140, 210, 0),    # 9, 10, 11
@@ -47,39 +43,39 @@ def main():
                 (140, 225, 0), (130, 225, 0), (170, 200, 0),    # 27, 28, 29
                 (170, 225, 0), (160, 225, 0)]                   # 30, 31
     
-    for point in vertices:
-        points.InsertNextPoint(point)
+    for point in cylinderVertices:
+        cylinderPoints.InsertNextPoint(point)
 
     # 'DarkSlateGray'
 
     # Page 35
-    face = vtkCellArray()
+    cylinderFace = vtkCellArray()
     
-    pts = [(0, 1, 3, 2), (0, 6, 5, 4), (7, 1, 8, 9),
+    cylinderFaces = [(0, 1, 3, 2), (0, 6, 5, 4), (7, 1, 8, 9),
            (4, 10, 11, 12), (13, 14, 15, 16), (17, 8, 18, 19),
            (14, 20, 21, 22), (23, 17, 24, 25), (26, 10, 27, 28),
            (13, 29, 30, 31)]
     
-    for pt in pts:
-        face.InsertNextCell(mkVtkIdList(pt))
+    for pt in cylinderFaces:
+        cylinderFace.InsertNextCell(mkVtkIdList(pt))
 
-    polydata = vtkPolyData()
-    polydata.SetPoints(points)
-    polydata.SetPolys(face)
+    cylinderPolydata = vtkPolyData()
+    cylinderPolydata.SetPoints(cylinderPoints)
+    cylinderPolydata.SetPolys(cylinderFace)
 
     # CHANGE FROM GLYPHFILTER
     glyphFilter = vtkVertexGlyphFilter()
-    glyphFilter.SetInputData(polydata)
+    glyphFilter.SetInputData(cylinderPolydata)
     glyphFilter.Update()
 
-    mapper = vtkPolyDataMapper2D()
-    mapper.SetInputData(polydata)
-    mapper.Update()
+    cylinderMapper = vtkPolyDataMapper2D()
+    cylinderMapper.SetInputData(cylinderPolydata)
+    cylinderMapper.Update()
 
-    actor = vtkActor2D()
-    actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(colors.GetColor3d('Gray'))
-    actor.GetProperty().SetPointSize(8)
+    cylinderActor = vtkActor2D()
+    cylinderActor.SetMapper(cylinderMapper)
+    cylinderActor.GetProperty().SetColor(colors.GetColor3d('Gray'))
+    cylinderActor.GetProperty().SetPointSize(8)
 
     # Create a renderer, render window, and interactor
     renderer = vtkRenderer()
@@ -89,11 +85,11 @@ def main():
     renderWindowInteractor.SetRenderWindow(renderWindow)
 
     # Add the actor to the scene
-    renderer.AddActor(actor)
+    renderer.AddActor(cylinderActor)
     renderWindow.SetSize(300, 400)
     renderer.SetBackground(colors.GetColor3d('Black'))
 
-    renderWindow.SetWindowName('Actor2D')
+    renderWindow.SetWindowName('Animation of Stirling Engine')
 
     # Render and interact
     renderWindow.Render()
