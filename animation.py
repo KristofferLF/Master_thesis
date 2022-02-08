@@ -1,40 +1,20 @@
 #!/usr/bin/env python
 
-"""
-This is (almost) a direct C++ to Python transliteration of
- <VTK-root>/Examples/DataManipulation/Cxx/Cube.cxx from the VTK
- source distribution, which "shows how to manually create vtkPolyData"
-
-A convenience function, mkVtkIdList(), has been added and one if/else
- so the example also works in version 6 or later.
-If your VTK version is 5.x then remove the line: colors = vtkNamedColors()
- and replace the set background parameters with (1.0, 0.9688, 0.8594)
-
-"""
-
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
 from vtkmodules.vtkCommonColor import vtkNamedColors
-from vtkmodules.vtkCommonCore import (
-    vtkFloatArray,
-    vtkIdList,
-    vtkPoints
-)
-from vtkmodules.vtkCommonDataModel import (
-    vtkCellArray,
-    vtkPolyData
-)
+from vtkmodules.vtkCommonCore import vtkPoints, vtkIdList
+from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkCellArray
+from vtkmodules.vtkFiltersGeneral import vtkVertexGlyphFilter
 from vtkmodules.vtkRenderingCore import (
-    vtkActor,
-    vtkCamera,
-    vtkPolyDataMapper,
+    vtkActor2D,
+    vtkPolyDataMapper2D,
     vtkRenderWindow,
     vtkRenderWindowInteractor,
     vtkRenderer
 )
-
 
 def mkVtkIdList(it):
     """
@@ -51,101 +31,82 @@ def mkVtkIdList(it):
         vil.InsertNextId(int(i))
     return vil
 
-
-def animation():
+def main():
     colors = vtkNamedColors()
-
-    # x = array of 8 3-tuples of float representing the vertices of a cube:
-    bottomPlateVertices = [(0.0, 0.0, 0.0), (50.0, 0.0, 0.0), (50.0, 50.0, 0.0), (0.0, 50.0, 0.0),
-         (0.0, 0.0, 1.0), (50.0, 0.0, 1.0), (50.0, 50.0, 1.0), (0.0, 50.0, 1.0)]
-
-    # pts = array of 6 4-tuples of vtkIdType (int) representing the faces
-    #     of the cube in terms of the above vertices
-    bottomPlateFaces = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4),
-           (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+    points = vtkPoints()
     
-    leftPlateVertices = [(0.0, 0.0, 1.0), (50.0, 0.0, 1.0), (50.0, 1.0, 1.0), (0.0, 1.0, 1.0),
-                         (0.0, 0.0, 50.0), (50.0, 0.0, 50.0), (50.0, 1.0, 50.0), (0.0, 1.0, 50.0)]
+    vertices = [(0, 0, 0), (300, 0, 0), (0, 10, 0),             # 0, 1, 2
+                (300, 10, 0), (0, 200, 0), (10, 200, 0),        # 3, 4, 5
+                (10, 0, 0), (290, 0, 0), (300, 200, 0),         # 6, 7, 8
+                (290, 200, 0), (140, 200, 0), (140, 210, 0),    # 9, 10, 11
+                (0, 210, 0), (160, 200, 0), (190, 200, 0),      # 12, 13, 14
+                (190, 210, 0), (160, 210, 0), (280, 200, 0),    # 15, 16, 17
+                (300, 210, 0), (280, 210, 0), (200, 200, 0),    # 18, 19, 20
+                (200, 250, 0), (190, 250, 0), (270, 200, 0),    # 21, 22, 23
+                (280, 250, 0), (270, 250, 0), (130, 200, 0),    # 24, 25, 26
+                (140, 225, 0), (130, 225, 0), (170, 200, 0),    # 27, 28, 29
+                (170, 225, 0), (160, 225, 0)]                   # 30, 31
     
-    leftPlateFaces = [(0, 4, 7, 3)]
+    for point in vertices:
+        points.InsertNextPoint(point)
 
-    # We'll create the building blocks of polydata including data attributes.
-    bottomPlate = vtkPolyData()
-    bottomPlatePoints = vtkPoints()
-    bottomPlatePolys = vtkCellArray()
-    bottomPlateScalars = vtkFloatArray()
+    # 'DarkSlateGray'
+
+    # Page 35
+    face = vtkCellArray()
     
-    # We'll create the building blocks of polydata including data attributes.
-    leftPlate = vtkPolyData()
-    leftPlatePoints = vtkPoints()
-    leftPlatePolys = vtkCellArray()
-    leftPlateScalars = vtkFloatArray()
-
-    # Load the point, cell, and data attributes.
-    for i, xi in enumerate(bottomPlateVertices):
-        bottomPlatePoints.InsertPoint(i, xi)
-    for pt in bottomPlateFaces:
-        bottomPlatePolys.InsertNextCell(mkVtkIdList(pt))
-    for i, _ in enumerate(bottomPlateVertices):
-        bottomPlateScalars.InsertTuple1(i, i)
-
-    # We now assign the pieces to the vtkPolyData.
-    bottomPlate.SetPoints(bottomPlatePoints)
-    bottomPlate.SetPolys(bottomPlatePolys)
-    bottomPlate.GetPointData().SetScalars(bottomPlateScalars)
-
-    # Now we'll look at it.
-    bottomPlateMapper = vtkPolyDataMapper()
-    bottomPlateMapper.SetInputData(bottomPlate)
-    bottomPlateMapper.SetScalarRange(bottomPlate.GetScalarRange())
-    bottomPlateActor = vtkActor()
-    bottomPlateActor.SetMapper(bottomPlateMapper)
+    pts = [(0, 1, 3, 2), (0, 6, 5, 4), (7, 1, 8, 9),
+           (4, 10, 11, 12), (13, 14, 15, 16), (17, 8, 18, 19),
+           (14, 20, 21, 22), (23, 17, 24, 25), (26, 10, 27, 28),
+           (13, 29, 30, 31)]
     
-    # Load the point, cell, and data attributes.
-    for i, xi in enumerate(leftPlateVertices):
-        leftPlatePoints.InsertPoint(i, xi)
-    for pt in leftPlateFaces:
-        leftPlatePolys.InsertNextCell(mkVtkIdList(pt))
-    for i, _ in enumerate(leftPlateVertices):
-        leftPlateScalars.InsertTuple1(i, i)
+    for pt in pts:
+        face.InsertNextCell(mkVtkIdList(pt))
 
-    # We now assign the pieces to the vtkPolyData.
-    leftPlate.SetPoints(leftPlatePoints)
-    leftPlate.SetPolys(leftPlatePolys)
-    leftPlate.GetPointData().SetScalars(leftPlateScalars)
+    polydata = vtkPolyData()
+    polydata.SetPoints(points)
+    polydata.SetPolys(face)
 
-    # Now we'll look at it.
-    leftPlateMapper = vtkPolyDataMapper()
-    leftPlateMapper.SetInputData(leftPlate)
-    leftPlateMapper.SetScalarRange(leftPlate.GetScalarRange())
-    leftPlateActor = vtkActor()
-    leftPlateActor.SetMapper(leftPlateMapper)
+    # CHANGE FROM GLYPHFILTER
+    glyphFilter = vtkVertexGlyphFilter()
+    glyphFilter.SetInputData(polydata)
+    glyphFilter.Update()
 
-    # The usual rendering stuff.
-    camera = vtkCamera()
-    camera.SetPosition(1, 1, 1)
-    camera.SetFocalPoint(0, 0, 0)
+    mapper = vtkPolyDataMapper2D()
+    mapper.SetInputData(polydata)
+    mapper.Update()
 
+    actor = vtkActor2D()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetColor(colors.GetColor3d('Gray'))
+    actor.GetProperty().SetPointSize(8)
+
+    # Create a renderer, render window, and interactor
     renderer = vtkRenderer()
-    renWin = vtkRenderWindow()
-    renWin.AddRenderer(renderer)
+    renderWindow = vtkRenderWindow()
+    renderWindow.AddRenderer(renderer)
+    renderWindowInteractor = vtkRenderWindowInteractor()
+    renderWindowInteractor.SetRenderWindow(renderWindow)
 
-    iren = vtkRenderWindowInteractor()
-    iren.SetRenderWindow(renWin)
+    # Add the actor to the scene
+    renderer.AddActor(actor)
+    renderWindow.SetSize(300, 400)
+    renderer.SetBackground(colors.GetColor3d('Black'))
 
-    renderer.AddActor(bottomPlateActor)
-    renderer.AddActor(leftPlateActor)
-    renderer.SetActiveCamera(camera)
-    renderer.ResetCamera()
-    renderer.SetBackground(colors.GetColor3d("Cornsilk"))
+    renderWindow.SetWindowName('Actor2D')
 
-    renWin.SetSize(600, 600)
-    renWin.SetWindowName("Stirling engine")
+    # Render and interact
+    renderWindow.Render()
+    # w2if = vtkWindowToImageFilter()
+    # w2if.SetInput(renderWindow)
+    # w2if.Update()
+    #
+    # writer = vtkPNGWriter()
+    # writer.SetFileName('TestActor2D.png')
+    # writer.SetInputConnection(w2if.GetOutputPort())
+    # writer.Write()
+    renderWindowInteractor.Start()
 
-    # interact with data
-    renWin.Render()
-    iren.Start()
 
-
-if __name__ == "__main__":
-    animation()
+if __name__ == '__main__':
+    main()
