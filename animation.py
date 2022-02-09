@@ -5,9 +5,8 @@ import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
 from vtkmodules.vtkCommonColor import vtkNamedColors
-from vtkmodules.vtkCommonCore import vtkPoints, vtkIdList
+from vtkmodules.vtkCommonCore import vtkPoints, vtkIdList, vtkUnsignedCharArray
 from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkCellArray
-from vtkmodules.vtkFiltersGeneral import vtkVertexGlyphFilter
 from vtkmodules.vtkRenderingCore import (
     vtkActor2D,
     vtkPolyDataMapper2D,
@@ -21,10 +20,10 @@ def mkVtkIdList(it):
     :param it: A python iterable.
     :return: A vtkIdList
     """
-    vil = vtkIdList()
+    vtkIL = vtkIdList()
     for i in it:
-        vil.InsertNextId(int(i))
-    return vil
+        vtkIL.InsertNextId(int(i))
+    return vtkIL
 
 def main():
     colors = vtkNamedColors()
@@ -76,7 +75,7 @@ def main():
     regeneratorVertices = [(150, 40, 0), (300, 40, 0), (300, 80, 0),    # 0, 1, 2
                            (150, 80, 0), (190, 80, 0), (190, 110, 0),   # 3, 4, 5
                            (150, 110, 0), (260, 80, 0), (300, 110, 0),  # 6, 7, 8
-                           (260, 110, 0)]
+                           (260, 110, 0)]                               # 9
     
     for point in cylinderVertices:
         cylinderPoints.InsertNextPoint(point)
@@ -102,7 +101,7 @@ def main():
     expansionVolumeFace = vtkCellArray()
     compressionVolumeFace = vtkCellArray()
     regeneratorFace = vtkCellArray()
-    
+
     cylinderFaces = [(0, 1, 2, 3), (0, 4, 5, 6), (7, 22, 8, 9),
                      (6, 10, 11, 12), (13, 8, 14, 15), (16, 11, 17, 18),
                      (15, 19, 20, 21), (24, 25, 1, 23), (26, 27, 28, 24),
@@ -137,6 +136,36 @@ def main():
         
     for face in regeneratorFaces:
         regeneratorFace.InsertNextCell(mkVtkIdList(face))
+        
+    expansionColors = vtkUnsignedCharArray()
+    expansionColors.SetNumberOfComponents(3)
+    expansionColors.SetName("Expansion colors")
+    expansionColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    expansionColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    expansionColors.InsertNextTuple3(*colors.GetColor3ub('Red'))
+    expansionColors.InsertNextTuple3(*colors.GetColor3ub('Red'))
+    
+    compressionColors = vtkUnsignedCharArray()
+    compressionColors.SetNumberOfComponents(3)
+    compressionColors.SetName("Compression colors")
+    compressionColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    compressionColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    compressionColors.InsertNextTuple3(*colors.GetColor3ub('Blue'))
+    compressionColors.InsertNextTuple3(*colors.GetColor3ub('Blue'))
+    
+    regeneratorColors = vtkUnsignedCharArray()
+    regeneratorColors.SetNumberOfComponents(3)
+    regeneratorColors.SetName("Regenerator colors")
+    regeneratorColors.InsertNextTuple3(*colors.GetColor3ub('Black'))
+    regeneratorColors.InsertNextTuple3(*colors.GetColor3ub('Black'))
+    regeneratorColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    regeneratorColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    regeneratorColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    regeneratorColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    regeneratorColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    regeneratorColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    regeneratorColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
+    regeneratorColors.InsertNextTuple3(*colors.GetColor3ub('Indigo'))
 
     cylinderPolydata = vtkPolyData()
     cylinderPolydata.SetPoints(cylinderPoints)
@@ -153,19 +182,17 @@ def main():
     expansionVolumePolydata = vtkPolyData()
     expansionVolumePolydata.SetPoints(expansionVolumePoints)
     expansionVolumePolydata.SetPolys(expansionVolumeFace)
+    expansionVolumePolydata.GetPointData().SetScalars(expansionColors)
     
     compressionVolumePolydata = vtkPolyData()
     compressionVolumePolydata.SetPoints(compressionVolumePoints)
     compressionVolumePolydata.SetPolys(compressionVolumeFace)
+    compressionVolumePolydata.GetPointData().SetScalars(compressionColors)
     
     regeneratorPolydata = vtkPolyData()
     regeneratorPolydata.SetPoints(regeneratorPoints)
     regeneratorPolydata.SetPolys(regeneratorFace)
-
-    # CHANGE FROM GLYPHFILTER
-    glyphFilter = vtkVertexGlyphFilter()
-    glyphFilter.SetInputData(cylinderPolydata)
-    glyphFilter.Update()
+    regeneratorPolydata.GetPointData().SetScalars(regeneratorColors)
 
     cylinderMapper = vtkPolyDataMapper2D()
     cylinderMapper.SetInputData(cylinderPolydata)
@@ -208,17 +235,17 @@ def main():
     
     expansionVolumeActor = vtkActor2D()
     expansionVolumeActor.SetMapper(expansionVolumeMapper)
-    expansionVolumeActor.GetProperty().SetColor(colors.GetColor3d('Red'))
+    #expansionVolumeActor.GetProperty().SetColor(colors.GetColor3d('Red'))
     expansionVolumeActor.GetProperty().SetPointSize(8)
     
     compressionVolumeActor = vtkActor2D()
     compressionVolumeActor.SetMapper(compressionVolumeMapper)
-    compressionVolumeActor.GetProperty().SetColor(colors.GetColor3d('Blue'))
+    #compressionVolumeActor.GetProperty().SetColor(colors.GetColor3d('Blue'))
     compressionVolumeActor.GetProperty().SetPointSize(8)
     
     regeneratorActor = vtkActor2D()
     regeneratorActor.SetMapper(regeneratorMapper)
-    regeneratorActor.GetProperty().SetColor(colors.GetColor3d('Purple'))
+    #regeneratorActor.GetProperty().SetColor(colors.GetColor3d('Indigo'))
     regeneratorActor.GetProperty().SetPointSize(8)
 
     # Create a renderer, render window, and interactor
