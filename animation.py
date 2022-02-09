@@ -29,79 +29,138 @@ def mkVtkIdList(it):
 def main():
     colors = vtkNamedColors()
     
-    centerCylinderAxis = 100
-    centerPistonAxis = 225
+    centerAxisLeft = 200
+    centerAxisRight = 200
     
     cylinderPoints = vtkPoints()
-    displacerPoints = vtkPoints()
-    pistonPoints = vtkPoints()
-    cylinderCompressionPoints = vtkPoints()
-    cylinderExpansionPoints = vtkPoints()
-    pistonCompressionPoints = vtkPoints()
-    pistonExpansionPoints = vtkPoints()
+    leftDisplacerPoints = vtkPoints()
+    rightDisplacerPoints = vtkPoints()
+    expansionVolumePoints = vtkPoints()
+    compressionVolumePoints = vtkPoints()
+    regeneratorPoints = vtkPoints()
     
-    cylinderVertices = [(0, 0, 0), (300, 0, 0), (0, 10, 0),             # 0, 1, 2
-                (300, 10, 0), (0, 200, 0), (10, 200, 0),                # 3, 4, 5
-                (10, 0, 0), (290, 0, 0), (300, 200, 0),                 # 6, 7, 8
-                (290, 200, 0), (140, 200, 0), (140, 210, 0),            # 9, 10, 11
-                (0, 210, 0), (160, 200, 0), (190, 200, 0),              # 12, 13, 14
-                (190, 210, 0), (160, 210, 0), (280, 200, 0),            # 15, 16, 17
-                (300, 210, 0), (280, 210, 0), (200, 200, 0),            # 18, 19, 20
-                (200, 250, 0), (190, 250, 0), (270, 200, 0),            # 21, 22, 23
-                (280, 250, 0), (270, 250, 0), (130, 200, 0),            # 24, 25, 26
-                (140, 225, 0), (130, 225, 0), (170, 200, 0),            # 27, 28, 29
-                (170, 225, 0), (160, 225, 0)]                           # 30, 31
+    cylinderVertices = [(0, 100, 0), (150, 100, 0), (150, 110, 0),  # 0, 1, 2
+                (0, 110, 0), (10, 100, 0), (10, 300, 0),            # 3, 4, 5
+                (0, 300, 0), (190, 80, 0), (200, 300, 0),           # 6, 7, 8
+                (190, 300, 0), (90, 300, 0), (90, 310, 0),          # 9, 10, 11
+                (0, 310, 0), (110, 300, 0), (200, 310, 0),          # 12, 13, 14
+                (110, 310, 0), (80, 310, 0), (90, 320, 0),          # 15, 16, 17
+                (80, 320, 0), (120, 310, 0), (120, 320, 0),         # 18, 19, 20
+                (110, 320, 0), (200, 80, 0), (140, 100, 0),         # 21, 22, 23
+                (140, 40, 0), (150, 40, 0), (140, 30, 0),           # 24, 25, 26
+                (300, 30, 0), (300, 40, 0), (260, 80, 0),           # 27, 28, 29
+                (260, 90, 0), (190, 90, 0), (250, 80, 0),           # 30, 31, 32
+                (260, 300, 0), (250, 300, 0), (310, 30, 0),         # 33, 34, 35
+                (310, 100, 0), (300, 100, 0), (450, 100, 0),        # 36, 37, 38
+                (450, 110, 0), (300, 110, 0), (440, 100, 0),        # 39, 40, 41
+                (450, 300, 0), (440, 300, 0), (340, 300, 0),        # 42, 43, 44
+                (340, 310, 0), (250, 310, 0), (360, 300, 0),        # 45, 46, 47
+                (450, 310, 0), (360, 310, 0), (330, 300, 0),        # 48, 49, 50
+                (340, 320, 0), (330, 320, 0), (370, 300, 0),        # 51, 52, 53
+                (370, 320, 0), (360, 320, 0)]                       # 54, 55
     
-    displacerVertices = [(10, centerCylinderAxis - 25, 0), (290, centerCylinderAxis - 25, 0), (290, centerCylinderAxis + 25, 0),    # 0, 1, 2
-                         (10, centerCylinderAxis + 25, 0), (140, centerCylinderAxis + 25, 0), (160, centerCylinderAxis + 25, 0),    # 3, 4, 5
-                         (160, centerCylinderAxis + 175, 0), (140, centerCylinderAxis + 175, 0)]                                    # 6, 7
+    leftDisplacerVertices = [(10, centerAxisLeft - 15, 1), (190, centerAxisLeft - 15, 1), (190, centerAxisLeft + 15, 1),        # 0, 1, 2
+                         (10, centerAxisLeft + 15, 1), (90, centerAxisLeft + 15, 1), (110, centerAxisLeft + 15, 1),             # 3, 4, 5
+                         (110, centerAxisLeft + 175, 1), (90, centerAxisLeft + 175, 1)]                                         # 6, 7
     
-    pistonVertices = [(200, centerPistonAxis - 7.5, 0), (270, centerPistonAxis - 7.5, 0), (270, centerPistonAxis + 7.5, 0),     # 0, 1, 2
-                    (200, centerPistonAxis + 7.5, 0), (232.5, centerPistonAxis + 7.5, 0), (237.5, centerPistonAxis + 7.5, 0),   # 3, 4, 5
-                    (237.5, centerPistonAxis + 50, 0), (232.5, centerPistonAxis + 50, 0)]                                       # 6, 7
+    rightDisplacerVertices = [(260, centerAxisRight - 15, 0), (440, centerAxisRight - 15, 0), (440, centerAxisRight + 15, 0),   # 0, 1, 2
+                              (260, centerAxisRight + 15, 0), (340, centerAxisRight + 15, 0), (360, centerAxisRight + 15, 0),   # 3, 4, 5
+                              (360, centerAxisRight + 175, 0), (340, centerAxisRight + 175, 0)]                                 # 6, 7
+    
+    expansionVolumeVertices = [(10, 110, 0), (190, 110, 0), (190, centerAxisLeft - 15, 0),      # 0, 1, 2
+                               (10, centerAxisLeft - 15, 0)]                                    # 3
+    
+    compressionVolumeVertices = [(260, 110, 0), (440, 110, 0), (440, centerAxisRight - 15, 0),  # 0, 1, 2
+                               (260, centerAxisRight - 15, 0)]                                  # 3
+    
+    regeneratorVertices = [(150, 40, 0), (300, 40, 0), (300, 80, 0),    # 0, 1, 2
+                           (150, 80, 0), (190, 80, 0), (190, 110, 0),   # 3, 4, 5
+                           (150, 110, 0), (260, 80, 0), (300, 110, 0),  # 6, 7, 8
+                           (260, 110, 0)]
     
     for point in cylinderVertices:
         cylinderPoints.InsertNextPoint(point)
         
-    for point in displacerVertices:
-        displacerPoints.InsertNextPoint(point)
+    for point in leftDisplacerVertices:
+        leftDisplacerPoints.InsertNextPoint(point)
         
-    for point in pistonVertices:
-        pistonPoints.InsertNextPoint(point)
+    for point in rightDisplacerVertices:
+        rightDisplacerPoints.InsertNextPoint(point)
+        
+    for point in expansionVolumeVertices:
+        expansionVolumePoints.InsertNextPoint(point)
+        
+    for point in compressionVolumeVertices:
+        compressionVolumePoints.InsertNextPoint(point)
+        
+    for point in regeneratorVertices:
+        regeneratorPoints.InsertNextPoint(point)
 
     cylinderFace = vtkCellArray()
-    displacerFace = vtkCellArray()
-    pistonFace = vtkCellArray()
+    leftDisplacerFace = vtkCellArray()
+    rightDisplacerFace = vtkCellArray()
+    expansionVolumeFace = vtkCellArray()
+    compressionVolumeFace = vtkCellArray()
+    regeneratorFace = vtkCellArray()
     
-    cylinderFaces = [(0, 1, 3, 2), (0, 6, 5, 4), (7, 1, 8, 9),
-           (4, 10, 11, 12), (13, 14, 15, 16), (17, 8, 18, 19),
-           (14, 20, 21, 22), (23, 17, 24, 25), (26, 10, 27, 28),
-           (13, 29, 30, 31)]
+    cylinderFaces = [(0, 1, 2, 3), (0, 4, 5, 6), (7, 22, 8, 9),
+                     (6, 10, 11, 12), (13, 8, 14, 15), (16, 11, 17, 18),
+                     (15, 19, 20, 21), (24, 25, 1, 23), (26, 27, 28, 24),
+                     (7, 29, 30, 31), (32, 29, 33, 34), (27, 35, 36, 37),
+                     (37, 38, 39, 40), (41, 38, 42, 43), (34, 44, 45, 46),
+                     (47, 42, 48, 49), (50, 44, 51, 52), (47, 53, 54, 55)]
     
-    displacerFaces = [(0, 1, 2, 3), (4, 5, 6, 7)]
+    leftDisplacerFaces = [(0, 1, 2, 3), (4, 5, 6, 7)]
     
-    pistonFaces = [(0, 1, 2, 3), (4, 5, 6, 7)]
+    rightDisplacerFaces = [(0, 1, 2, 3), (4, 5, 6, 7)]
     
-    for pt in cylinderFaces:
-        cylinderFace.InsertNextCell(mkVtkIdList(pt))
+    expansionVolumeFaces = [(0, 1, 2, 3)]
+    
+    compressionVolumeFaces = [(0, 1, 2, 3)]
+    
+    regeneratorFaces = [(0, 1, 2, 3), (3, 4, 5, 6), (7, 2, 8, 9)]
+    
+    for face in cylinderFaces:
+        cylinderFace.InsertNextCell(mkVtkIdList(face))
         
-    for pt in displacerFaces:
-        displacerFace.InsertNextCell(mkVtkIdList(pt))
+    for face in leftDisplacerFaces:
+        leftDisplacerFace.InsertNextCell(mkVtkIdList(face))
         
-    for pt in pistonFaces:
-        pistonFace.InsertNextCell(mkVtkIdList(pt))
+    for face in rightDisplacerFaces:
+        rightDisplacerFace.InsertNextCell(mkVtkIdList(face))
+        
+    for face in expansionVolumeFaces:
+        expansionVolumeFace.InsertNextCell(mkVtkIdList(face))
+        
+    for face in compressionVolumeFaces:
+        compressionVolumeFace.InsertNextCell(mkVtkIdList(face))
+        
+    for face in regeneratorFaces:
+        regeneratorFace.InsertNextCell(mkVtkIdList(face))
 
     cylinderPolydata = vtkPolyData()
     cylinderPolydata.SetPoints(cylinderPoints)
     cylinderPolydata.SetPolys(cylinderFace)
     
-    displacerPolydata = vtkPolyData()
-    displacerPolydata.SetPoints(displacerPoints)
-    displacerPolydata.SetPolys(displacerFace)
+    leftDisplacerPolydata = vtkPolyData()
+    leftDisplacerPolydata.SetPoints(leftDisplacerPoints)
+    leftDisplacerPolydata.SetPolys(leftDisplacerFace)
     
-    pistonPolydata = vtkPolyData()
-    pistonPolydata.SetPoints(pistonPoints)
-    pistonPolydata.SetPolys(pistonFace)
+    rightDisplacerPolydata = vtkPolyData()
+    rightDisplacerPolydata.SetPoints(rightDisplacerPoints)
+    rightDisplacerPolydata.SetPolys(rightDisplacerFace)
+    
+    expansionVolumePolydata = vtkPolyData()
+    expansionVolumePolydata.SetPoints(expansionVolumePoints)
+    expansionVolumePolydata.SetPolys(expansionVolumeFace)
+    
+    compressionVolumePolydata = vtkPolyData()
+    compressionVolumePolydata.SetPoints(compressionVolumePoints)
+    compressionVolumePolydata.SetPolys(compressionVolumeFace)
+    
+    regeneratorPolydata = vtkPolyData()
+    regeneratorPolydata.SetPoints(regeneratorPoints)
+    regeneratorPolydata.SetPolys(regeneratorFace)
 
     # CHANGE FROM GLYPHFILTER
     glyphFilter = vtkVertexGlyphFilter()
@@ -112,28 +171,55 @@ def main():
     cylinderMapper.SetInputData(cylinderPolydata)
     cylinderMapper.Update()
     
-    displacerMapper = vtkPolyDataMapper2D()
-    displacerMapper.SetInputData(displacerPolydata)
-    displacerMapper.Update()
+    leftDisplacerMapper = vtkPolyDataMapper2D()
+    leftDisplacerMapper.SetInputData(leftDisplacerPolydata)
+    leftDisplacerMapper.Update()
     
-    pistonMapper = vtkPolyDataMapper2D()
-    pistonMapper.SetInputData(pistonPolydata)
-    pistonMapper.Update()
+    rightDisplacerMapper = vtkPolyDataMapper2D()
+    rightDisplacerMapper.SetInputData(rightDisplacerPolydata)
+    rightDisplacerMapper.Update()
+    
+    expansionVolumeMapper = vtkPolyDataMapper2D()
+    expansionVolumeMapper.SetInputData(expansionVolumePolydata)
+    expansionVolumeMapper.Update()
+    
+    compressionVolumeMapper = vtkPolyDataMapper2D()
+    compressionVolumeMapper.SetInputData(compressionVolumePolydata)
+    compressionVolumeMapper.Update()
+    
+    regeneratorMapper = vtkPolyDataMapper2D()
+    regeneratorMapper.SetInputData(regeneratorPolydata)
+    regeneratorMapper.Update()
 
     cylinderActor = vtkActor2D()
     cylinderActor.SetMapper(cylinderMapper)
     cylinderActor.GetProperty().SetColor(colors.GetColor3d('Grey'))
     cylinderActor.GetProperty().SetPointSize(8)
     
-    displacerActor = vtkActor2D()
-    displacerActor.SetMapper(displacerMapper)
-    displacerActor.GetProperty().SetColor(colors.GetColor3d('SlateGray'))
-    displacerActor.GetProperty().SetPointSize(8)
+    leftDisplacerActor = vtkActor2D()
+    leftDisplacerActor.SetMapper(leftDisplacerMapper)
+    leftDisplacerActor.GetProperty().SetColor(colors.GetColor3d('SlateGray'))
+    leftDisplacerActor.GetProperty().SetPointSize(8)
     
-    pistonActor = vtkActor2D()
-    pistonActor.SetMapper(pistonMapper)
-    pistonActor.GetProperty().SetColor(colors.GetColor3d('SlateGray'))
-    pistonActor.GetProperty().SetPointSize(8)
+    rightDisplacerActor = vtkActor2D()
+    rightDisplacerActor.SetMapper(rightDisplacerMapper)
+    rightDisplacerActor.GetProperty().SetColor(colors.GetColor3d('SlateGray'))
+    rightDisplacerActor.GetProperty().SetPointSize(8)
+    
+    expansionVolumeActor = vtkActor2D()
+    expansionVolumeActor.SetMapper(expansionVolumeMapper)
+    expansionVolumeActor.GetProperty().SetColor(colors.GetColor3d('Red'))
+    expansionVolumeActor.GetProperty().SetPointSize(8)
+    
+    compressionVolumeActor = vtkActor2D()
+    compressionVolumeActor.SetMapper(compressionVolumeMapper)
+    compressionVolumeActor.GetProperty().SetColor(colors.GetColor3d('Blue'))
+    compressionVolumeActor.GetProperty().SetPointSize(8)
+    
+    regeneratorActor = vtkActor2D()
+    regeneratorActor.SetMapper(regeneratorMapper)
+    regeneratorActor.GetProperty().SetColor(colors.GetColor3d('Purple'))
+    regeneratorActor.GetProperty().SetPointSize(8)
 
     # Create a renderer, render window, and interactor
     renderer = vtkRenderer()
@@ -144,9 +230,12 @@ def main():
 
     # Add the actor to the scene
     renderer.AddActor(cylinderActor)
-    renderer.AddActor(displacerActor)
-    renderer.AddActor(pistonActor)
-    renderWindow.SetSize(300, 400)
+    renderer.AddActor(leftDisplacerActor)
+    renderer.AddActor(rightDisplacerActor)
+    renderer.AddActor(expansionVolumeActor)
+    renderer.AddActor(compressionVolumeActor)
+    renderer.AddActor(regeneratorActor)
+    renderWindow.SetSize(450, 600)
     renderer.SetBackground(colors.GetColor3d('White'))
 
     renderWindow.SetWindowName('Animation of Stirling Engine')
