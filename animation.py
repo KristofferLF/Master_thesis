@@ -3,6 +3,8 @@
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
+import time
+import math
 import vtkmodules.vtkRenderingOpenGL2
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkPoints, vtkIdList, vtkUnsignedCharArray
@@ -25,11 +27,11 @@ def mkVtkIdList(it):
         vtkIL.InsertNextId(int(i))
     return vtkIL
 
-def main():
+def animateStirlingEngine():
     colors = vtkNamedColors()
     
-    centerAxisLeft = 200
-    centerAxisRight = 200
+    centerAxisLeft = 205
+    centerAxisRight = 205
     
     cylinderPoints = vtkPoints()
     leftDisplacerPoints = vtkPoints()
@@ -60,11 +62,11 @@ def main():
     
     leftDisplacerVertices = [(10, centerAxisLeft - 15, 1), (190, centerAxisLeft - 15, 1), (190, centerAxisLeft + 15, 1),        # 0, 1, 2
                          (10, centerAxisLeft + 15, 1), (90, centerAxisLeft + 15, 1), (110, centerAxisLeft + 15, 1),             # 3, 4, 5
-                         (110, centerAxisLeft + 175, 1), (90, centerAxisLeft + 175, 1)]                                         # 6, 7
+                         (110, centerAxisLeft + 225, 1), (90, centerAxisLeft + 225, 1)]                                         # 6, 7
     
     rightDisplacerVertices = [(260, centerAxisRight - 15, 0), (440, centerAxisRight - 15, 0), (440, centerAxisRight + 15, 0),   # 0, 1, 2
                               (260, centerAxisRight + 15, 0), (340, centerAxisRight + 15, 0), (360, centerAxisRight + 15, 0),   # 3, 4, 5
-                              (360, centerAxisRight + 175, 0), (340, centerAxisRight + 175, 0)]                                 # 6, 7
+                              (360, centerAxisRight + 225, 0), (340, centerAxisRight + 225, 0)]                                 # 6, 7
     
     expansionVolumeVertices = [(10, 110, 0), (190, 110, 0), (190, centerAxisLeft - 15, 0),      # 0, 1, 2
                                (10, centerAxisLeft - 15, 0)]                                    # 3
@@ -252,6 +254,7 @@ def main():
     renderer = vtkRenderer()
     renderWindow = vtkRenderWindow()
     renderWindow.AddRenderer(renderer)
+    renderWindow.SetWindowName("Stirling engine animation")
     renderWindowInteractor = vtkRenderWindowInteractor()
     renderWindowInteractor.SetRenderWindow(renderWindow)
 
@@ -262,13 +265,29 @@ def main():
     renderer.AddActor(expansionVolumeActor)
     renderer.AddActor(compressionVolumeActor)
     renderer.AddActor(regeneratorActor)
-    renderWindow.SetSize(450, 600)
+    renderWindow.SetSize(450, 700)
     renderer.SetBackground(colors.GetColor3d('White'))
 
     renderWindow.SetWindowName('Animation of Stirling Engine')
 
+    renderWindowInteractor.Initialize()
+
     # Render and interact
     renderWindow.Render()
+    
+    step = 0
+    maxSteps = 360
+    continueAnimation = True
+    
+    while continueAnimation:
+        time.sleep(0.03)
+        leftDisplacerActor.SetPosition([0, calculateMovement(step)])
+        rightDisplacerActor.SetPosition([0, - calculateMovement(step)])
+        renderWindow.Render()
+        step += 1
+        if (step == maxSteps):
+            break
+    
     # w2if = vtkWindowToImageFilter()
     # w2if.SetInput(renderWindow)
     # w2if.Update()
@@ -277,8 +296,11 @@ def main():
     # writer.SetFileName('TestActor2D.png')
     # writer.SetInputConnection(w2if.GetOutputPort())
     # writer.Write()
+    
     renderWindowInteractor.Start()
-
+    
+def calculateMovement(degree):
+    return math.sin(degree * (2 * math.pi / 360)) * 80
 
 if __name__ == '__main__':
-    main()
+    animateStirlingEngine()
