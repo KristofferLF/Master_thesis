@@ -279,6 +279,10 @@ def animateStirlingEngine():
     maxSteps = 360
     continueAnimation = True
     
+    # TODO Replace 'Displacer' with 'Piston'
+    # TODO Remove 'While'-loop and place it outside the function
+    # TODO Add input-values for 'step' / 'degree' and potentially other values.
+    
     while continueAnimation:
         time.sleep(0.03)
         leftDisplacerActor.SetPosition([0, calculateMovement(step)])
@@ -291,7 +295,6 @@ def animateStirlingEngine():
     # w2if = vtkWindowToImageFilter()
     # w2if.SetInput(renderWindow)
     # w2if.Update()
-    #
     # writer = vtkPNGWriter()
     # writer.SetFileName('TestActor2D.png')
     # writer.SetInputConnection(w2if.GetOutputPort())
