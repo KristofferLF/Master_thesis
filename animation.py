@@ -22,18 +22,23 @@ offsetCenterAxis = 195
 flywheelHorizontalCenter = 225
 flywheelVerticalCenter = 675
 flywheelRadius = 120
+pistonHeight = offsetCenterAxis + 240
 
 def mkVtkIdList(it):
     """
     :param it: A python iterable.
     :return: A vtkIdList
     """
-    vtkIL = vtkIdList()
+    vtkIdL = vtkIdList()
     for i in it:
-        vtkIL.InsertNextId(int(i))
-    return vtkIL
+        vtkIdL.InsertNextId(int(i))
+    return vtkIdL
 
 def animateStirlingEngine():
+    """
+    Animates an idealized Stirling engine with alpha-configuration.
+    """
+    
     step = 0
     maxSteps = 360
     
@@ -156,10 +161,15 @@ def animateStirlingEngine():
     flywheelSource.SetCenter(flywheelHorizontalCenter, flywheelVerticalCenter, 0.0)
     
     flywheelCenterSource = vtkRegularPolygonSource()
-    flywheelCenterSource.GeneratePolygonOff()
     flywheelCenterSource.SetNumberOfSides(50)
     flywheelCenterSource.SetRadius(50.0)
     flywheelCenterSource.SetCenter(flywheelHorizontalCenter, flywheelVerticalCenter, 0.0)
+    
+    flywheelCenterRadiusSource = vtkRegularPolygonSource()
+    flywheelCenterRadiusSource.GeneratePolygonOff()
+    flywheelCenterRadiusSource.SetNumberOfSides(50)
+    flywheelCenterRadiusSource.SetRadius(50.0)
+    flywheelCenterRadiusSource.SetCenter(flywheelHorizontalCenter, flywheelVerticalCenter, 0.0)
 
     cylinderMapper = vtkPolyDataMapper2D()
     cylinderMapper.SetInputData(cylinderPolydata)
@@ -185,6 +195,9 @@ def animateStirlingEngine():
     
     flywheelCenterMapper = vtkPolyDataMapper2D()
     flywheelCenterMapper.SetInputConnection(flywheelCenterSource.GetOutputPort())
+    
+    flywheelCenterRadiusMapper = vtkPolyDataMapper2D()
+    flywheelCenterRadiusMapper.SetInputConnection(flywheelCenterRadiusSource.GetOutputPort())
 
     cylinderActor = vtkActor2D()
     cylinderActor.SetMapper(cylinderMapper)
@@ -219,7 +232,11 @@ def animateStirlingEngine():
     
     flywheelCenterActor = vtkActor2D()
     flywheelCenterActor.SetMapper(flywheelCenterMapper)
-    flywheelCenterActor.GetProperty().SetColor(colors.GetColor3d('Black'))
+    flywheelCenterActor.GetProperty().SetColor(colors.GetColor3d('LightGrey'))
+    
+    flywheelCenterRadiusActor = vtkActor2D()
+    flywheelCenterRadiusActor.SetMapper(flywheelCenterRadiusMapper)
+    flywheelCenterRadiusActor.GetProperty().SetColor(colors.GetColor3d('Black'))
     
     expansionPistonAnchorActor = vtkActor2D()
     expansionPistonAnchorActor.SetMapper(generateExpansionPistonAnchorMapper(step))
@@ -228,6 +245,14 @@ def animateStirlingEngine():
     compressionPistonAnchorActor = vtkActor2D()
     compressionPistonAnchorActor.SetMapper(generateCompressionPistonAnchorMapper(step))
     compressionPistonAnchorActor.GetProperty().SetColor(colors.GetColor3d('LightGrey'))
+    
+    expansionPistonRodActor = vtkActor2D()
+    expansionPistonRodActor.SetMapper(generateExpansionPistonRodMapper(step))
+    expansionPistonRodActor.GetProperty().SetColor(colors.GetColor3d('DarkSlateGray'))
+    
+    compressionPistonRodActor = vtkActor2D()
+    compressionPistonRodActor.SetMapper(generateCompressionPistonRodMapper(step))
+    compressionPistonRodActor.GetProperty().SetColor(colors.GetColor3d('DarkSlateGray'))
     
     # Create a renderer, render window, and interactor
     renderer = vtkRenderer()
@@ -246,7 +271,10 @@ def animateStirlingEngine():
     renderer.AddActor(regeneratorActor)
     renderer.AddActor(flywheelActor)
     renderer.AddActor(flywheelCenterActor)
+    renderer.AddActor(flywheelCenterRadiusActor)
+    renderer.AddActor(expansionPistonRodActor)
     renderer.AddActor(expansionPistonAnchorActor)
+    renderer.AddActor(compressionPistonRodActor)
     renderer.AddActor(compressionPistonAnchorActor)
     renderWindow.SetSize(450, 800)
     renderer.SetBackground(colors.GetColor3d('White'))
@@ -275,6 +303,9 @@ def animateStirlingEngine():
         
         expansionPistonAnchorActor.SetMapper(generateExpansionPistonAnchorMapper(step))
         compressionPistonAnchorActor.SetMapper(generateCompressionPistonAnchorMapper(step))
+        
+        expansionPistonRodActor.SetMapper(generateExpansionPistonRodMapper(step))
+        compressionPistonRodActor.SetMapper(generateCompressionPistonRodMapper(step))
         
         renderWindow.Render()
         step += 1
@@ -378,6 +409,7 @@ def generateExpansionPistonAnchorMapper(degree):
     expansionPistonAnchorSource = vtkRegularPolygonSource()
     expansionPistonAnchorSource.SetNumberOfSides(50)
     expansionPistonAnchorSource.SetRadius(15.0)
+    
     expansionPistonAnchorSource.SetCenter(calculateHorizontalMovement(degree) + flywheelHorizontalCenter, calculateVerticalMovement(degree) + flywheelVerticalCenter, 0.0)
     
     expansionPistonAnchorMapper = vtkPolyDataMapper2D()
@@ -397,6 +429,58 @@ def generateCompressionPistonAnchorMapper(degree):
     compressionPistonAnchorMapper.SetInputConnection(compressionPistonAnchorSource.GetOutputPort())
     
     return compressionPistonAnchorMapper
+
+def generateExpansionPistonRodMapper(step):
+    expansionPistonRodPoints = vtkPoints()
+    
+    expansionPistonRodVertices = [(90, calculateHeight(step) + pistonHeight - 1, 1), (110, calculateHeight(step) + pistonHeight - 1, 1),
+                                  (calculateHorizontalMovement(step) + flywheelHorizontalCenter + 10, calculateVerticalMovement(step) + flywheelVerticalCenter, 0),
+                                  (calculateHorizontalMovement(step) + flywheelHorizontalCenter - 10, calculateVerticalMovement(step) + flywheelVerticalCenter, 0)]
+    
+    for point in expansionPistonRodVertices:
+        expansionPistonRodPoints.InsertNextPoint(point)
+        
+    expansionPistonRodFace = vtkCellArray()
+    expansionPistonRodFaces = [(0, 1, 2, 3)]
+    
+    for face in expansionPistonRodFaces:
+        expansionPistonRodFace.InsertNextCell(mkVtkIdList(face))
+    
+    expansionPistonRodPolydata = vtkPolyData()
+    expansionPistonRodPolydata.SetPoints(expansionPistonRodPoints)
+    expansionPistonRodPolydata.SetPolys(expansionPistonRodFace)
+    
+    expansionPistonRodMapper = vtkPolyDataMapper2D()
+    expansionPistonRodMapper.SetInputData(expansionPistonRodPolydata)
+    expansionPistonRodMapper.Update()
+    
+    return expansionPistonRodMapper
+
+def generateCompressionPistonRodMapper(step):
+    compressionPistonRodPoints = vtkPoints()
+    
+    compressionPistonRodVertices = [(340, - calculateHeight(step) + pistonHeight - 1, 1), (360, - calculateHeight(step) + pistonHeight - 1, 1),
+                                  (- calculateHorizontalMovement(step) + flywheelHorizontalCenter + 10, - calculateVerticalMovement(step) + flywheelVerticalCenter, 0),
+                                  (- calculateHorizontalMovement(step) + flywheelHorizontalCenter - 10, - calculateVerticalMovement(step) + flywheelVerticalCenter, 0)]
+    
+    for point in compressionPistonRodVertices:
+        compressionPistonRodPoints.InsertNextPoint(point)
+        
+    compressionPistonRodFace = vtkCellArray()
+    compressionPistonRodFaces = [(0, 1, 2, 3)]
+    
+    for face in compressionPistonRodFaces:
+        compressionPistonRodFace.InsertNextCell(mkVtkIdList(face))
+    
+    compressionPistonRodPolydata = vtkPolyData()
+    compressionPistonRodPolydata.SetPoints(compressionPistonRodPoints)
+    compressionPistonRodPolydata.SetPolys(compressionPistonRodFace)
+    
+    compressionPistonRodMapper = vtkPolyDataMapper2D()
+    compressionPistonRodMapper.SetInputData(compressionPistonRodPolydata)
+    compressionPistonRodMapper.Update()
+    
+    return compressionPistonRodMapper
 
 if __name__ == '__main__':
     animateStirlingEngine()
