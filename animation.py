@@ -9,6 +9,7 @@ import vtkmodules.vtkRenderingOpenGL2
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkPoints, vtkIdList, vtkUnsignedCharArray
 from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkCellArray
+from vtkmodules.vtkFiltersSources import vtkRegularPolygonSource
 from vtkmodules.vtkRenderingCore import (
     vtkActor2D,
     vtkPolyDataMapper2D,
@@ -30,13 +31,14 @@ def mkVtkIdList(it):
     return vtkIL
 
 def animateStirlingEngine():
+    step = 0
+    maxSteps = 360
+    
     colors = vtkNamedColors()
     
     cylinderPoints = vtkPoints()
-    leftDisplacerPoints = vtkPoints()
-    rightDisplacerPoints = vtkPoints()
-    expansionVolumePoints = vtkPoints()
-    compressionVolumePoints = vtkPoints()
+    leftPistonPoints = vtkPoints()
+    rightPistonPoints = vtkPoints()
     regeneratorPoints = vtkPoints()
     
     cylinderVertices = [(0, 100, 0), (150, 100, 0), (150, 110, 0),  # 0, 1, 2
@@ -59,19 +61,13 @@ def animateStirlingEngine():
                 (340, 320, 0), (330, 320, 0), (370, 300, 0),        # 51, 52, 53
                 (370, 320, 0), (360, 320, 0)]                       # 54, 55
     
-    leftDisplacerVertices = [(10, offsetCenterAxis, 1), (190, offsetCenterAxis, 1), (190, offsetCenterAxis + 30, 1),        # 0, 1, 2
-                         (10, offsetCenterAxis + 30, 1), (90, offsetCenterAxis + 30, 1), (110, offsetCenterAxis + 30, 1),             # 3, 4, 5
+    leftPistonVertices = [(10, offsetCenterAxis, 1), (190, offsetCenterAxis, 1), (190, offsetCenterAxis + 30, 1),                   # 0, 1, 2
+                         (10, offsetCenterAxis + 30, 1), (90, offsetCenterAxis + 30, 1), (110, offsetCenterAxis + 30, 1),           # 3, 4, 5
                          (110, offsetCenterAxis + 240, 1), (90, offsetCenterAxis + 240, 1)]                                         # 6, 7
     
-    rightDisplacerVertices = [(260, offsetCenterAxis, 0), (440, offsetCenterAxis, 0), (440, offsetCenterAxis + 30, 0),   # 0, 1, 2
-                              (260, offsetCenterAxis + 30, 0), (340, offsetCenterAxis + 30, 0), (360, offsetCenterAxis + 30, 0),   # 3, 4, 5
-                              (360, offsetCenterAxis + 240, 0), (340, offsetCenterAxis + 240, 0)]                                 # 6, 7
-    
-    expansionVolumeVertices = [(10, 110, 0), (190, 110, 0), (190, offsetCenterAxis, 0),      # 0, 1, 2
-                               (10, offsetCenterAxis, 0)]                                    # 3
-    
-    compressionVolumeVertices = [(260, 110, 0), (440, 110, 0), (440, offsetCenterAxis, 0),  # 0, 1, 2
-                               (260, offsetCenterAxis, 0)]                                  # 3
+    rightPistonVertices = [(260, offsetCenterAxis, 0), (440, offsetCenterAxis, 0), (440, offsetCenterAxis + 30, 0),                 # 0, 1, 2
+                              (260, offsetCenterAxis + 30, 0), (340, offsetCenterAxis + 30, 0), (360, offsetCenterAxis + 30, 0),    # 3, 4, 5
+                              (360, offsetCenterAxis + 240, 0), (340, offsetCenterAxis + 240, 0)]                                   # 6, 7
     
     regeneratorVertices = [(150, 40, 0), (300, 40, 0), (300, 80, 0),    # 0, 1, 2
                            (150, 80, 0), (190, 80, 0), (190, 110, 0),   # 3, 4, 5
@@ -81,26 +77,18 @@ def animateStirlingEngine():
     for point in cylinderVertices:
         cylinderPoints.InsertNextPoint(point)
         
-    for point in leftDisplacerVertices:
-        leftDisplacerPoints.InsertNextPoint(point)
+    for point in leftPistonVertices:
+        leftPistonPoints.InsertNextPoint(point)
         
-    for point in rightDisplacerVertices:
-        rightDisplacerPoints.InsertNextPoint(point)
-        
-    for point in expansionVolumeVertices:
-        expansionVolumePoints.InsertNextPoint(point)
-        
-    for point in compressionVolumeVertices:
-        compressionVolumePoints.InsertNextPoint(point)
+    for point in rightPistonVertices:
+        rightPistonPoints.InsertNextPoint(point)
         
     for point in regeneratorVertices:
         regeneratorPoints.InsertNextPoint(point)
 
     cylinderFace = vtkCellArray()
-    leftDisplacerFace = vtkCellArray()
-    rightDisplacerFace = vtkCellArray()
-    expansionVolumeFace = vtkCellArray()
-    compressionVolumeFace = vtkCellArray()
+    leftPistonFace = vtkCellArray()
+    rightPistonFace = vtkCellArray()
     regeneratorFace = vtkCellArray()
 
     cylinderFaces = [(0, 1, 2, 3), (0, 4, 5, 6), (7, 22, 8, 9),
@@ -110,49 +98,23 @@ def animateStirlingEngine():
                      (37, 38, 39, 40), (41, 38, 42, 43), (34, 44, 45, 46),
                      (47, 42, 48, 49), (50, 44, 51, 52), (47, 53, 54, 55)]
     
-    leftDisplacerFaces = [(0, 1, 2, 3), (4, 5, 6, 7)]
+    leftPistonFaces = [(0, 1, 2, 3), (4, 5, 6, 7)]
     
-    rightDisplacerFaces = [(0, 1, 2, 3), (4, 5, 6, 7)]
-    
-    expansionVolumeFaces = [(0, 1, 2, 3)]
-    
-    compressionVolumeFaces = [(0, 1, 2, 3)]
+    rightPistonFaces = [(0, 1, 2, 3), (4, 5, 6, 7)]
     
     regeneratorFaces = [(0, 1, 2, 3), (3, 4, 5, 6), (7, 2, 8, 9)]
     
     for face in cylinderFaces:
         cylinderFace.InsertNextCell(mkVtkIdList(face))
         
-    for face in leftDisplacerFaces:
-        leftDisplacerFace.InsertNextCell(mkVtkIdList(face))
+    for face in leftPistonFaces:
+        leftPistonFace.InsertNextCell(mkVtkIdList(face))
         
-    for face in rightDisplacerFaces:
-        rightDisplacerFace.InsertNextCell(mkVtkIdList(face))
-        
-    for face in expansionVolumeFaces:
-        expansionVolumeFace.InsertNextCell(mkVtkIdList(face))
-        
-    for face in compressionVolumeFaces:
-        compressionVolumeFace.InsertNextCell(mkVtkIdList(face))
-        
+    for face in rightPistonFaces:
+        rightPistonFace.InsertNextCell(mkVtkIdList(face))
+    
     for face in regeneratorFaces:
         regeneratorFace.InsertNextCell(mkVtkIdList(face))
-        
-    expansionColors = vtkUnsignedCharArray()
-    expansionColors.SetNumberOfComponents(3)
-    expansionColors.SetName("Expansion colors")
-    expansionColors.InsertNextTuple3(75.0, 0.0, 75.0)
-    expansionColors.InsertNextTuple3(75.0, 0.0, 75.0)
-    expansionColors.InsertNextTuple3(255.0, 0.0, 0.0)
-    expansionColors.InsertNextTuple3(255.0, 0.0, 0.0)
-    
-    compressionColors = vtkUnsignedCharArray()
-    compressionColors.SetNumberOfComponents(3)
-    compressionColors.SetName("Compression colors")
-    compressionColors.InsertNextTuple3(75.0, 0.0, 75.0)
-    compressionColors.InsertNextTuple3(75.0, 0.0, 75.0)
-    compressionColors.InsertNextTuple3(0.0, 0.0, 255.0)
-    compressionColors.InsertNextTuple3(0.0, 0.0, 255.0)
     
     regeneratorColors = vtkUnsignedCharArray()
     regeneratorColors.SetNumberOfComponents(3)
@@ -172,81 +134,75 @@ def animateStirlingEngine():
     cylinderPolydata.SetPoints(cylinderPoints)
     cylinderPolydata.SetPolys(cylinderFace)
     
-    leftDisplacerPolydata = vtkPolyData()
-    leftDisplacerPolydata.SetPoints(leftDisplacerPoints)
-    leftDisplacerPolydata.SetPolys(leftDisplacerFace)
+    leftPistonPolydata = vtkPolyData()
+    leftPistonPolydata.SetPoints(leftPistonPoints)
+    leftPistonPolydata.SetPolys(leftPistonFace)
     
-    rightDisplacerPolydata = vtkPolyData()
-    rightDisplacerPolydata.SetPoints(rightDisplacerPoints)
-    rightDisplacerPolydata.SetPolys(rightDisplacerFace)
-    
-    expansionVolumePolydata = vtkPolyData()
-    expansionVolumePolydata.SetPoints(expansionVolumePoints)
-    expansionVolumePolydata.SetPolys(expansionVolumeFace)
-    expansionVolumePolydata.GetPointData().SetScalars(expansionColors)
-    
-    compressionVolumePolydata = vtkPolyData()
-    compressionVolumePolydata.SetPoints(compressionVolumePoints)
-    compressionVolumePolydata.SetPolys(compressionVolumeFace)
-    compressionVolumePolydata.GetPointData().SetScalars(compressionColors)
+    rightPistonPolydata = vtkPolyData()
+    rightPistonPolydata.SetPoints(rightPistonPoints)
+    rightPistonPolydata.SetPolys(rightPistonFace)
     
     regeneratorPolydata = vtkPolyData()
     regeneratorPolydata.SetPoints(regeneratorPoints)
     regeneratorPolydata.SetPolys(regeneratorFace)
     regeneratorPolydata.GetPointData().SetScalars(regeneratorColors)
 
+    flywheelSource = vtkRegularPolygonSource()
+    flywheelSource.SetNumberOfSides(50)
+    flywheelSource.SetRadius(110.0)
+    flywheelSource.SetCenter(225.0, 575.0, 0.0)
+    
+    flywheelMapper = vtkPolyDataMapper2D()
+    flywheelMapper.SetInputConnection(flywheelSource.GetOutputPort())
+
     cylinderMapper = vtkPolyDataMapper2D()
     cylinderMapper.SetInputData(cylinderPolydata)
     cylinderMapper.Update()
     
-    leftDisplacerMapper = vtkPolyDataMapper2D()
-    leftDisplacerMapper.SetInputData(leftDisplacerPolydata)
-    leftDisplacerMapper.Update()
+    leftPistonMapper = vtkPolyDataMapper2D()
+    leftPistonMapper.SetInputData(leftPistonPolydata)
+    leftPistonMapper.Update()
     
-    rightDisplacerMapper = vtkPolyDataMapper2D()
-    rightDisplacerMapper.SetInputData(rightDisplacerPolydata)
-    rightDisplacerMapper.Update()
+    rightPistonMapper = vtkPolyDataMapper2D()
+    rightPistonMapper.SetInputData(rightPistonPolydata)
+    rightPistonMapper.Update()
     
-    expansionVolumeMapper = vtkPolyDataMapper2D()
-    expansionVolumeMapper.SetInputData(expansionVolumePolydata)
-    expansionVolumeMapper.Update()
-    
-    compressionVolumeMapper = vtkPolyDataMapper2D()
-    compressionVolumeMapper.SetInputData(compressionVolumePolydata)
-    compressionVolumeMapper.Update()
+    expansionVolumeMapper = generateExpansionVolumeMapper(calculateMovement(step), calculateColorScale(step))    
+    compressionVolumeMapper = generateCompressionVolumeMapper(- calculateMovement(step), calculateColorScale(-step))
     
     regeneratorMapper = vtkPolyDataMapper2D()
     regeneratorMapper.SetInputData(regeneratorPolydata)
     regeneratorMapper.Update()
+
+    flywheelActor = vtkActor2D()
+    flywheelActor.SetMapper(flywheelMapper)
+    flywheelActor.GetProperty().SetColor(colors.GetColor3d('DarkGray'))
 
     cylinderActor = vtkActor2D()
     cylinderActor.SetMapper(cylinderMapper)
     cylinderActor.GetProperty().SetColor(colors.GetColor3d('Grey'))
     cylinderActor.GetProperty().SetPointSize(8)
     
-    leftDisplacerActor = vtkActor2D()
-    leftDisplacerActor.SetMapper(leftDisplacerMapper)
-    leftDisplacerActor.GetProperty().SetColor(colors.GetColor3d('DarkSlateGray'))
-    leftDisplacerActor.GetProperty().SetPointSize(8)
+    leftPistonActor = vtkActor2D()
+    leftPistonActor.SetMapper(leftPistonMapper)
+    leftPistonActor.GetProperty().SetColor(colors.GetColor3d('DarkSlateGray'))
+    leftPistonActor.GetProperty().SetPointSize(8)
     
-    rightDisplacerActor = vtkActor2D()
-    rightDisplacerActor.SetMapper(rightDisplacerMapper)
-    rightDisplacerActor.GetProperty().SetColor(colors.GetColor3d('DarkSlateGray'))
-    rightDisplacerActor.GetProperty().SetPointSize(8)
+    rightPistonActor = vtkActor2D()
+    rightPistonActor.SetMapper(rightPistonMapper)
+    rightPistonActor.GetProperty().SetColor(colors.GetColor3d('DarkSlateGray'))
+    rightPistonActor.GetProperty().SetPointSize(8)
     
     expansionVolumeActor = vtkActor2D()
     expansionVolumeActor.SetMapper(expansionVolumeMapper)
-    #expansionVolumeActor.GetProperty().SetColor(colors.GetColor3d('Red'))
     expansionVolumeActor.GetProperty().SetPointSize(8)
     
     compressionVolumeActor = vtkActor2D()
     compressionVolumeActor.SetMapper(compressionVolumeMapper)
-    #compressionVolumeActor.GetProperty().SetColor(colors.GetColor3d('Blue'))
     compressionVolumeActor.GetProperty().SetPointSize(8)
     
     regeneratorActor = vtkActor2D()
     regeneratorActor.SetMapper(regeneratorMapper)
-    #regeneratorActor.GetProperty().SetColor(colors.GetColor3d('Indigo'))
     regeneratorActor.GetProperty().SetPointSize(8)
 
     # Create a renderer, render window, and interactor
@@ -258,9 +214,10 @@ def animateStirlingEngine():
     renderWindowInteractor.SetRenderWindow(renderWindow)
 
     # Add the actor to the scene
+    renderer.AddActor(flywheelActor)
     renderer.AddActor(cylinderActor)
-    renderer.AddActor(leftDisplacerActor)
-    renderer.AddActor(rightDisplacerActor)
+    renderer.AddActor(leftPistonActor)
+    renderer.AddActor(rightPistonActor)
     renderer.AddActor(expansionVolumeActor)
     renderer.AddActor(compressionVolumeActor)
     renderer.AddActor(regeneratorActor)
@@ -274,23 +231,20 @@ def animateStirlingEngine():
     # Render and interact
     renderWindow.Render()
     
-    step = 0
-    maxSteps = 720
     continueAnimation = True
     
-    # TODO Replace 'Displacer' with 'Piston'
     # TODO Remove 'While'-loop and place it outside the function
     # TODO Add input-values for 'step' / 'degree' and potentially other values.
     # TODO Add descriptions and documentation
     
     while continueAnimation:
         time.sleep(0.025)
-        leftDisplacerActor.SetPosition([0, calculateMovement(step)])
-        rightDisplacerActor.SetPosition([0, - calculateMovement(step)])
+        leftPistonActor.SetPosition([0, calculateMovement(step)])
+        rightPistonActor.SetPosition([0, - calculateMovement(step)])
         
         # TODO Add preloading of the next mapper and save it for hotswap
-        expansionVolumeActor.SetMapper(generateExpansionVolumeMapper(calculateMovement(step)))
-        compressionVolumeActor.SetMapper(generateCompressionVolumeMapper(- calculateMovement(step) + 1))
+        expansionVolumeActor.SetMapper(generateExpansionVolumeMapper(calculateMovement(step) + 1, calculateColorScale(step)))
+        compressionVolumeActor.SetMapper(generateCompressionVolumeMapper(- calculateMovement(step) + 1, calculateColorScale(-step)))
         
         renderWindow.Render()
         step += 1
@@ -308,9 +262,12 @@ def animateStirlingEngine():
     renderWindowInteractor.Start()
     
 def calculateMovement(degree):
-    return math.sin(degree * (2 * math.pi / 360)) * 80
+    return math.sin(degree * (2 * math.pi / 360)) * 75
 
-def generateExpansionVolumeMapper(expansionVolumeHeight):
+def calculateColorScale(degree):
+    return (math.sin(degree * (2 * math.pi / 360)) + 1) * 0.5
+
+def generateExpansionVolumeMapper(expansionVolumeHeight, colorScale):
     expansionVolumePoints = vtkPoints()
     
     expansionVolumeVertices = [(10, 110, 0), (190, 110, 0), (190, expansionVolumeHeight + offsetCenterAxis, 0),
@@ -330,8 +287,8 @@ def generateExpansionVolumeMapper(expansionVolumeHeight):
     expansionColors.SetName("Expansion colors")
     expansionColors.InsertNextTuple3(75.0, 0.0, 75.0)
     expansionColors.InsertNextTuple3(75.0, 0.0, 75.0)
-    expansionColors.InsertNextTuple3(255.0, 0.0, 0.0)
-    expansionColors.InsertNextTuple3(255.0, 0.0, 0.0)
+    expansionColors.InsertNextTuple3(255.0 * colorScale, 0.0, 0.0)
+    expansionColors.InsertNextTuple3(255.0 * colorScale, 0.0, 0.0)
     
     expansionVolumePolydata = vtkPolyData()
     expansionVolumePolydata.SetPoints(expansionVolumePoints)
@@ -344,7 +301,7 @@ def generateExpansionVolumeMapper(expansionVolumeHeight):
     
     return expansionVolumeMapper
     
-def generateCompressionVolumeMapper(compressionVolumeHeight):
+def generateCompressionVolumeMapper(compressionVolumeHeight, colorScale):
     compressionVolumePoints = vtkPoints()
     
     compressionVolumeVertices = [(260, 110, 0), (440, 110, 0), (440, compressionVolumeHeight + offsetCenterAxis, 0),
@@ -364,8 +321,8 @@ def generateCompressionVolumeMapper(compressionVolumeHeight):
     compressionColors.SetName("Compression colors")
     compressionColors.InsertNextTuple3(75.0, 0.0, 75.0)
     compressionColors.InsertNextTuple3(75.0, 0.0, 75.0)
-    compressionColors.InsertNextTuple3(0.0, 0.0, 255.0)
-    compressionColors.InsertNextTuple3(0.0, 0.0, 255.0)
+    compressionColors.InsertNextTuple3(0.0, 0.0, 255.0 * colorScale)
+    compressionColors.InsertNextTuple3(0.0, 0.0, 255.0 * colorScale)
     
     compressionVolumePolydata = vtkPolyData()
     compressionVolumePolydata.SetPoints(compressionVolumePoints)
