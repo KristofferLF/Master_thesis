@@ -17,6 +17,8 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderer
 )
 
+offsetCenterAxis = 195
+
 def mkVtkIdList(it):
     """
     :param it: A python iterable.
@@ -29,9 +31,6 @@ def mkVtkIdList(it):
 
 def animateStirlingEngine():
     colors = vtkNamedColors()
-    
-    centerAxisLeft = 205
-    centerAxisRight = 205
     
     cylinderPoints = vtkPoints()
     leftDisplacerPoints = vtkPoints()
@@ -60,19 +59,19 @@ def animateStirlingEngine():
                 (340, 320, 0), (330, 320, 0), (370, 300, 0),        # 51, 52, 53
                 (370, 320, 0), (360, 320, 0)]                       # 54, 55
     
-    leftDisplacerVertices = [(10, centerAxisLeft - 15, 1), (190, centerAxisLeft - 15, 1), (190, centerAxisLeft + 15, 1),        # 0, 1, 2
-                         (10, centerAxisLeft + 15, 1), (90, centerAxisLeft + 15, 1), (110, centerAxisLeft + 15, 1),             # 3, 4, 5
-                         (110, centerAxisLeft + 225, 1), (90, centerAxisLeft + 225, 1)]                                         # 6, 7
+    leftDisplacerVertices = [(10, offsetCenterAxis, 1), (190, offsetCenterAxis, 1), (190, offsetCenterAxis + 30, 1),        # 0, 1, 2
+                         (10, offsetCenterAxis + 30, 1), (90, offsetCenterAxis + 30, 1), (110, offsetCenterAxis + 30, 1),             # 3, 4, 5
+                         (110, offsetCenterAxis + 240, 1), (90, offsetCenterAxis + 240, 1)]                                         # 6, 7
     
-    rightDisplacerVertices = [(260, centerAxisRight - 15, 0), (440, centerAxisRight - 15, 0), (440, centerAxisRight + 15, 0),   # 0, 1, 2
-                              (260, centerAxisRight + 15, 0), (340, centerAxisRight + 15, 0), (360, centerAxisRight + 15, 0),   # 3, 4, 5
-                              (360, centerAxisRight + 225, 0), (340, centerAxisRight + 225, 0)]                                 # 6, 7
+    rightDisplacerVertices = [(260, offsetCenterAxis, 0), (440, offsetCenterAxis, 0), (440, offsetCenterAxis + 30, 0),   # 0, 1, 2
+                              (260, offsetCenterAxis + 30, 0), (340, offsetCenterAxis + 30, 0), (360, offsetCenterAxis + 30, 0),   # 3, 4, 5
+                              (360, offsetCenterAxis + 240, 0), (340, offsetCenterAxis + 240, 0)]                                 # 6, 7
     
-    expansionVolumeVertices = [(10, 110, 0), (190, 110, 0), (190, centerAxisLeft - 15, 0),      # 0, 1, 2
-                               (10, centerAxisLeft - 15, 0)]                                    # 3
+    expansionVolumeVertices = [(10, 110, 0), (190, 110, 0), (190, offsetCenterAxis, 0),      # 0, 1, 2
+                               (10, offsetCenterAxis, 0)]                                    # 3
     
-    compressionVolumeVertices = [(260, 110, 0), (440, 110, 0), (440, centerAxisRight - 15, 0),  # 0, 1, 2
-                               (260, centerAxisRight - 15, 0)]                                  # 3
+    compressionVolumeVertices = [(260, 110, 0), (440, 110, 0), (440, offsetCenterAxis, 0),  # 0, 1, 2
+                               (260, offsetCenterAxis, 0)]                                  # 3
     
     regeneratorVertices = [(150, 40, 0), (300, 40, 0), (300, 80, 0),    # 0, 1, 2
                            (150, 80, 0), (190, 80, 0), (190, 110, 0),   # 3, 4, 5
@@ -276,17 +275,23 @@ def animateStirlingEngine():
     renderWindow.Render()
     
     step = 0
-    maxSteps = 360
+    maxSteps = 720
     continueAnimation = True
     
     # TODO Replace 'Displacer' with 'Piston'
     # TODO Remove 'While'-loop and place it outside the function
     # TODO Add input-values for 'step' / 'degree' and potentially other values.
+    # TODO Add descriptions and documentation
     
     while continueAnimation:
-        time.sleep(0.03)
+        time.sleep(0.025)
         leftDisplacerActor.SetPosition([0, calculateMovement(step)])
         rightDisplacerActor.SetPosition([0, - calculateMovement(step)])
+        
+        # TODO Add preloading of the next mapper and save it for hotswap
+        expansionVolumeActor.SetMapper(generateExpansionVolumeMapper(calculateMovement(step)))
+        compressionVolumeActor.SetMapper(generateCompressionVolumeMapper(- calculateMovement(step) + 1))
+        
         renderWindow.Render()
         step += 1
         if (step == maxSteps):
@@ -304,6 +309,74 @@ def animateStirlingEngine():
     
 def calculateMovement(degree):
     return math.sin(degree * (2 * math.pi / 360)) * 80
+
+def generateExpansionVolumeMapper(expansionVolumeHeight):
+    expansionVolumePoints = vtkPoints()
+    
+    expansionVolumeVertices = [(10, 110, 0), (190, 110, 0), (190, expansionVolumeHeight + offsetCenterAxis, 0),
+                               (10, expansionVolumeHeight + offsetCenterAxis, 0)]
+    
+    for point in expansionVolumeVertices:
+        expansionVolumePoints.InsertNextPoint(point)
+        
+    expansionVolumeFace = vtkCellArray()
+    expansionVolumeFaces = [(0, 1, 2, 3)]
+    
+    for face in expansionVolumeFaces:
+        expansionVolumeFace.InsertNextCell(mkVtkIdList(face))
+        
+    expansionColors = vtkUnsignedCharArray()
+    expansionColors.SetNumberOfComponents(3)
+    expansionColors.SetName("Expansion colors")
+    expansionColors.InsertNextTuple3(75.0, 0.0, 75.0)
+    expansionColors.InsertNextTuple3(75.0, 0.0, 75.0)
+    expansionColors.InsertNextTuple3(255.0, 0.0, 0.0)
+    expansionColors.InsertNextTuple3(255.0, 0.0, 0.0)
+    
+    expansionVolumePolydata = vtkPolyData()
+    expansionVolumePolydata.SetPoints(expansionVolumePoints)
+    expansionVolumePolydata.SetPolys(expansionVolumeFace)
+    expansionVolumePolydata.GetPointData().SetScalars(expansionColors)
+    
+    expansionVolumeMapper = vtkPolyDataMapper2D()
+    expansionVolumeMapper.SetInputData(expansionVolumePolydata)
+    expansionVolumeMapper.Update()
+    
+    return expansionVolumeMapper
+    
+def generateCompressionVolumeMapper(compressionVolumeHeight):
+    compressionVolumePoints = vtkPoints()
+    
+    compressionVolumeVertices = [(260, 110, 0), (440, 110, 0), (440, compressionVolumeHeight + offsetCenterAxis, 0),
+                               (260, compressionVolumeHeight + offsetCenterAxis, 0)]
+    
+    for point in compressionVolumeVertices:
+        compressionVolumePoints.InsertNextPoint(point)
+        
+    compressionVolumeFace = vtkCellArray()
+    compressionVolumeFaces = [(0, 1, 2, 3)]
+    
+    for face in compressionVolumeFaces:
+        compressionVolumeFace.InsertNextCell(mkVtkIdList(face))
+        
+    compressionColors = vtkUnsignedCharArray()
+    compressionColors.SetNumberOfComponents(3)
+    compressionColors.SetName("Compression colors")
+    compressionColors.InsertNextTuple3(75.0, 0.0, 75.0)
+    compressionColors.InsertNextTuple3(75.0, 0.0, 75.0)
+    compressionColors.InsertNextTuple3(0.0, 0.0, 255.0)
+    compressionColors.InsertNextTuple3(0.0, 0.0, 255.0)
+    
+    compressionVolumePolydata = vtkPolyData()
+    compressionVolumePolydata.SetPoints(compressionVolumePoints)
+    compressionVolumePolydata.SetPolys(compressionVolumeFace)
+    compressionVolumePolydata.GetPointData().SetScalars(compressionColors)
+    
+    compressionVolumeMapper = vtkPolyDataMapper2D()
+    compressionVolumeMapper.SetInputData(compressionVolumePolydata)
+    compressionVolumeMapper.Update()
+    
+    return compressionVolumeMapper
 
 if __name__ == '__main__':
     animateStirlingEngine()
