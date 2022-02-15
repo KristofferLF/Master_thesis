@@ -19,6 +19,9 @@ from vtkmodules.vtkRenderingCore import (
 )
 
 offsetCenterAxis = 195
+flywheelHorizontalCenter = 225
+flywheelVerticalCenter = 675
+flywheelRadius = 120
 
 def mkVtkIdList(it):
     """
@@ -149,11 +152,14 @@ def animateStirlingEngine():
 
     flywheelSource = vtkRegularPolygonSource()
     flywheelSource.SetNumberOfSides(50)
-    flywheelSource.SetRadius(110.0)
-    flywheelSource.SetCenter(225.0, 575.0, 0.0)
+    flywheelSource.SetRadius(flywheelRadius)
+    flywheelSource.SetCenter(flywheelHorizontalCenter, flywheelVerticalCenter, 0.0)
     
-    flywheelMapper = vtkPolyDataMapper2D()
-    flywheelMapper.SetInputConnection(flywheelSource.GetOutputPort())
+    flywheelCenterSource = vtkRegularPolygonSource()
+    flywheelCenterSource.GeneratePolygonOff()
+    flywheelCenterSource.SetNumberOfSides(50)
+    flywheelCenterSource.SetRadius(50.0)
+    flywheelCenterSource.SetCenter(flywheelHorizontalCenter, flywheelVerticalCenter, 0.0)
 
     cylinderMapper = vtkPolyDataMapper2D()
     cylinderMapper.SetInputData(cylinderPolydata)
@@ -167,16 +173,18 @@ def animateStirlingEngine():
     rightPistonMapper.SetInputData(rightPistonPolydata)
     rightPistonMapper.Update()
     
-    expansionVolumeMapper = generateExpansionVolumeMapper(calculateMovement(step), calculateColorScale(step))    
-    compressionVolumeMapper = generateCompressionVolumeMapper(- calculateMovement(step), calculateColorScale(-step))
+    expansionVolumeMapper = generateExpansionVolumeMapper(calculateHeight(step), calculateColorScale(step))    
+    compressionVolumeMapper = generateCompressionVolumeMapper(- calculateHeight(step), calculateColorScale(-step))
     
     regeneratorMapper = vtkPolyDataMapper2D()
     regeneratorMapper.SetInputData(regeneratorPolydata)
     regeneratorMapper.Update()
 
-    flywheelActor = vtkActor2D()
-    flywheelActor.SetMapper(flywheelMapper)
-    flywheelActor.GetProperty().SetColor(colors.GetColor3d('DarkGray'))
+    flywheelMapper = vtkPolyDataMapper2D()
+    flywheelMapper.SetInputConnection(flywheelSource.GetOutputPort())
+    
+    flywheelCenterMapper = vtkPolyDataMapper2D()
+    flywheelCenterMapper.SetInputConnection(flywheelCenterSource.GetOutputPort())
 
     cylinderActor = vtkActor2D()
     cylinderActor.SetMapper(cylinderMapper)
@@ -205,6 +213,22 @@ def animateStirlingEngine():
     regeneratorActor.SetMapper(regeneratorMapper)
     regeneratorActor.GetProperty().SetPointSize(8)
 
+    flywheelActor = vtkActor2D()
+    flywheelActor.SetMapper(flywheelMapper)
+    flywheelActor.GetProperty().SetColor(colors.GetColor3d('DarkGray'))
+    
+    flywheelCenterActor = vtkActor2D()
+    flywheelCenterActor.SetMapper(flywheelCenterMapper)
+    flywheelCenterActor.GetProperty().SetColor(colors.GetColor3d('Black'))
+    
+    expansionPistonAnchorActor = vtkActor2D()
+    expansionPistonAnchorActor.SetMapper(generateExpansionPistonAnchorMapper(step))
+    expansionPistonAnchorActor.GetProperty().SetColor(colors.GetColor3d('LightGrey'))
+    
+    compressionPistonAnchorActor = vtkActor2D()
+    compressionPistonAnchorActor.SetMapper(generateCompressionPistonAnchorMapper(step))
+    compressionPistonAnchorActor.GetProperty().SetColor(colors.GetColor3d('LightGrey'))
+    
     # Create a renderer, render window, and interactor
     renderer = vtkRenderer()
     renderWindow = vtkRenderWindow()
@@ -214,14 +238,17 @@ def animateStirlingEngine():
     renderWindowInteractor.SetRenderWindow(renderWindow)
 
     # Add the actor to the scene
-    renderer.AddActor(flywheelActor)
     renderer.AddActor(cylinderActor)
     renderer.AddActor(leftPistonActor)
     renderer.AddActor(rightPistonActor)
     renderer.AddActor(expansionVolumeActor)
     renderer.AddActor(compressionVolumeActor)
     renderer.AddActor(regeneratorActor)
-    renderWindow.SetSize(450, 700)
+    renderer.AddActor(flywheelActor)
+    renderer.AddActor(flywheelCenterActor)
+    renderer.AddActor(expansionPistonAnchorActor)
+    renderer.AddActor(compressionPistonAnchorActor)
+    renderWindow.SetSize(450, 800)
     renderer.SetBackground(colors.GetColor3d('White'))
 
     renderWindow.SetWindowName('Animation of Stirling Engine')
@@ -239,12 +266,15 @@ def animateStirlingEngine():
     
     while continueAnimation:
         time.sleep(0.025)
-        leftPistonActor.SetPosition([0, calculateMovement(step)])
-        rightPistonActor.SetPosition([0, - calculateMovement(step)])
+        leftPistonActor.SetPosition([0, calculateHeight(step)])
+        rightPistonActor.SetPosition([0, - calculateHeight(step)])
         
         # TODO Add preloading of the next mapper and save it for hotswap
-        expansionVolumeActor.SetMapper(generateExpansionVolumeMapper(calculateMovement(step) + 1, calculateColorScale(step)))
-        compressionVolumeActor.SetMapper(generateCompressionVolumeMapper(- calculateMovement(step) + 1, calculateColorScale(-step)))
+        expansionVolumeActor.SetMapper(generateExpansionVolumeMapper(calculateHeight(step) + 1, calculateColorScale(step)))
+        compressionVolumeActor.SetMapper(generateCompressionVolumeMapper(- calculateHeight(step) + 1, calculateColorScale(-step)))
+        
+        expansionPistonAnchorActor.SetMapper(generateExpansionPistonAnchorMapper(step))
+        compressionPistonAnchorActor.SetMapper(generateCompressionPistonAnchorMapper(step))
         
         renderWindow.Render()
         step += 1
@@ -261,11 +291,20 @@ def animateStirlingEngine():
     
     renderWindowInteractor.Start()
     
-def calculateMovement(degree):
+def calculateHeight(degree):
     return math.sin(degree * (2 * math.pi / 360)) * 75
 
 def calculateColorScale(degree):
     return (math.sin(degree * (2 * math.pi / 360)) + 1) * 0.5
+
+def calculateHorizontalMovement(degree, phaseShift = 0):
+    return math.cos((degree + phaseShift) * (2 * math.pi / 360)) * 85
+    
+def calculateVerticalMovement(degree, phaseShift = 0):
+    if (math.sin(degree * 2 * math.pi / 360) < 0):
+        return - math.sqrt(85 ** 2 - calculateHorizontalMovement(degree, phaseShift) ** 2)
+    else:
+        return math.sqrt(85 ** 2 - calculateHorizontalMovement(degree, phaseShift) ** 2)
 
 def generateExpansionVolumeMapper(expansionVolumeHeight, colorScale):
     expansionVolumePoints = vtkPoints()
@@ -334,6 +373,30 @@ def generateCompressionVolumeMapper(compressionVolumeHeight, colorScale):
     compressionVolumeMapper.Update()
     
     return compressionVolumeMapper
+
+def generateExpansionPistonAnchorMapper(degree):
+    expansionPistonAnchorSource = vtkRegularPolygonSource()
+    expansionPistonAnchorSource.SetNumberOfSides(50)
+    expansionPistonAnchorSource.SetRadius(15.0)
+    expansionPistonAnchorSource.SetCenter(calculateHorizontalMovement(degree) + flywheelHorizontalCenter, calculateVerticalMovement(degree) + flywheelVerticalCenter, 0.0)
+    
+    expansionPistonAnchorMapper = vtkPolyDataMapper2D()
+    expansionPistonAnchorMapper.SetInputConnection(expansionPistonAnchorSource.GetOutputPort())
+    
+    return expansionPistonAnchorMapper
+
+def generateCompressionPistonAnchorMapper(degree):
+    # Calculate horizontal movement
+    
+    compressionPistonAnchorSource = vtkRegularPolygonSource()
+    compressionPistonAnchorSource.SetNumberOfSides(50)
+    compressionPistonAnchorSource.SetRadius(15.0)
+    compressionPistonAnchorSource.SetCenter(- calculateHorizontalMovement(degree) + flywheelHorizontalCenter, - calculateVerticalMovement(degree) + flywheelVerticalCenter, 0.0)
+    
+    compressionPistonAnchorMapper = vtkPolyDataMapper2D()
+    compressionPistonAnchorMapper.SetInputConnection(compressionPistonAnchorSource.GetOutputPort())
+    
+    return compressionPistonAnchorMapper
 
 if __name__ == '__main__':
     animateStirlingEngine()
