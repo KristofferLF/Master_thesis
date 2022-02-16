@@ -287,7 +287,8 @@ class StirlingAnimation():
         # writer.SetInputConnection(w2if.GetOutputPort())
         # writer.Write()
         
-        # TODO This is important!
+        # TODO Needed to display a single image. Maybe use 'start' and 'stop' to show?
+        # Eventually just animate a single frame with a long sleep-function
         #self.renderWindowInteractor.Start()
         
     def animateStep(self, step):

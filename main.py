@@ -6,6 +6,7 @@ from functools import partial
 from PySide2.QtMultimediaWidgets import QVideoWidget
 from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtCore import QUrl
+from PySide2 import QtGui
 from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
 from schmidt import schmidtAnalysis, plotSchmidtAnalysis
 import sys
@@ -257,13 +258,6 @@ class ManualInput(QDialog):
             self.hide()
 
 class StateWindow(QDialog):
-    number = 1
-
-    Position1Text = "The transfer medium is displaced to the bottom of the cylinder. Here, it is exposed to a higher temperature, which results in an increase in pressure."
-    Position2Text = "The continuous motion of the flywheel results in the piston being moved to its lowest position. The pressure is still increasing, but the displacer is moving upwards in the cylinder."
-    Position3Text = "The increase in pressure is moving the piston upwards, and has moved the displacer to the top of the cylinder. This relative increase in volume results in a decrease in pressure."
-    Position4Text = "The piston is at its maximal height due to the continuous motion of the flywheel and the internal pressure of the cylinder. The displacer is moving downwards in the cylinder."
-    
     def __init__(self, parent=None):
         super(StateWindow, self).__init__(parent)
         window = QWidget()
@@ -281,14 +275,6 @@ class StateWindow(QDialog):
         self.continueButton.setFixedSize(100, 50)
         self.continueButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
-        self.displayButton = QPushButton("Display animation")
-        self.displayButton.setFixedSize(300, 50)
-        self.displayButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        
-        self.textDescription = QLabel(self.addPositionText(StateWindow.number))
-        self.textDescription.setFixedSize(300, 200)
-        self.textDescription.setWordWrap(True)
-        
         # Create navigation-buttons
         self.nav1Button = QPushButton("1")
         self.nav1Button.setFixedSize(30, 30)
@@ -303,15 +289,8 @@ class StateWindow(QDialog):
         self.nav4Button.setFixedSize(30, 30)
         self.nav4Button.setFocusPolicy(QtCore.Qt.NoFocus)
         
-        # Create pixmap
-        self.image = QLabel(self)
-        pixmap = QPixmap("assets/Position" + str(StateWindow.number) + ".png")
-        pixmap = pixmap.scaled(400, 400, QtCore.Qt.KeepAspectRatio)
-        self.image.setPixmap(pixmap)
-        
         # Create layout and add widgets
         layout = QGridLayout(window)
-        layout.addWidget(self.image, 0, 0, 4, 6)
         
         layout.addWidget(self.nav1Button, 5, 1, 1, 1)
         layout.addWidget(self.nav2Button, 5, 2, 1, 1)
@@ -319,8 +298,6 @@ class StateWindow(QDialog):
         layout.addWidget(self.nav4Button, 5, 4, 1, 1)
         
         layout.addWidget(self.prompt, 0, 7, 1, 5)
-        layout.addWidget(self.displayButton, 1, 8, 1, 3)
-        layout.addWidget(self.textDescription, 2, 8, 3, 3)
         layout.addWidget(self.returnButton, 5, 8, 1, 1)
         layout.addWidget(self.continueButton, 5, 10, 1, 1)
         
@@ -328,11 +305,6 @@ class StateWindow(QDialog):
         self.setLayout(layout)
         
         # Connect buttons
-        self.nav1Button.clicked.connect(partial(self.navigateToImage, 1))
-        self.nav2Button.clicked.connect(partial(self.navigateToImage, 3))
-        self.nav3Button.clicked.connect(partial(self.navigateToImage, 5))
-        self.nav4Button.clicked.connect(partial(self.navigateToImage, 7))
-        self.displayButton.clicked.connect(self.displayAnimation)
         self.returnButton.clicked.connect(self.returnToIntro)
         self.continueButton.clicked.connect(self.continueToResults)
         
@@ -340,121 +312,11 @@ class StateWindow(QDialog):
         self.intro = Intro(self)
         self.intro.show()
         self.hide()
-    
-    def displayAnimation(self):
-        self.animation = AnimationWindow(self)
-        self.animation.show()
-        self.hide()
-        
-    def navigateToImage(self, num):
-        StateWindow.number = num
-        self.displayImage = StateWindow(self)
-        self.displayImage.show()
-        self.hide()
         
     def continueToResults(self):
         self.results = ResultWindow(self)
         self.results.show()
         self.hide()
-        
-    def addPositionText(self, number):
-        switcher = {
-            1: StateWindow.Position1Text,
-            3: StateWindow.Position2Text,
-            5: StateWindow.Position3Text,
-            7: StateWindow.Position4Text
-        }
-        return switcher.get(number, "Invalid position.")
-
-
-class AnimationWindow(QDialog):
-    def __init__(self, parent=None):
-        super(AnimationWindow, self).__init__(parent)
-        window = QWidget()
-        self.setWindowTitle("Stirling engine animation")
-        
-        # Create widgets
-        self.prompt = QLabel("Steps in a Stirling cycle.")
-        self.prompt.setAlignment(QtCore.Qt.AlignCenter)
-        self.prompt.setFixedSize(300, 100)
-        self.prompt.setObjectName("prompt")
-        self.returnButton = QPushButton("Return")
-        self.returnButton.setFixedSize(100, 50)
-        self.returnButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.continueButton = QPushButton("Continue")
-        self.continueButton.setFixedSize(100, 50)
-        self.continueButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        
-        self.displayButton = QPushButton("Display state visualization")
-        self.displayButton.setFixedSize(300, 50)
-        self.displayButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        
-        self.textDescription = QLabel("This is an animation of a complete thermodynamic cycle in a simplified Stirling engine. Each step can be reviewed individually by pressing 'Display state visualization'.")
-        self.textDescription.setFixedSize(300, 200)
-        self.textDescription.setWordWrap(True)
-        
-        # Create navigation-buttons
-        self.playButton = QPushButton("Play")
-        self.playButton.setFixedSize(100, 50)
-        self.playButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.pauseButton = QPushButton("Pause")
-        self.pauseButton.setFixedSize(100, 50)
-        self.pauseButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        
-        # Create video widget
-        self.mediaPlayer = QMediaPlayer()
-        self.video = QVideoWidget()
-        self.video.setFixedSize(854, 480)
-        self.mediaPlayer.setVideoOutput(self.video)
-        self.mediaPlayer.setSource(QUrl("assets/stirling_animation.mp4"))
-        self.video.show()
-        self.mediaPlayer.setLoops(100)
-        #self.mediaPlayer.play()
-        
-        # Create layout and add widgets
-        layout = QGridLayout(window)
-        layout.addWidget(self.video, 0, 0, 4, 8)
-        
-        layout.addWidget(self.playButton, 5, 2, 2, 1)
-        layout.addWidget(self.pauseButton, 5, 5, 2, 1)
-        
-        layout.addWidget(self.prompt, 0, 9, 1, 5)
-        layout.addWidget(self.displayButton, 1, 10, 1, 3)
-        layout.addWidget(self.textDescription, 2, 10, 3, 3)
-        layout.addWidget(self.returnButton, 5, 10, 1, 1)
-        layout.addWidget(self.continueButton, 5, 12, 1, 1)
-        
-        # Set layout
-        self.setLayout(layout)
-        
-        # Connect buttons
-        self.playButton.clicked.connect(self.playVideo)
-        self.pauseButton.clicked.connect(self.pauseVideo)
-        self.displayButton.clicked.connect(self.displayStateVisualization)
-        self.returnButton.clicked.connect(self.returnToManualInput)
-        self.continueButton.clicked.connect(self.continueToResults)
-        
-    def returnToManualInput(self):
-        self.manualInput = ManualInput(self)
-        self.manualInput.show()
-        self.hide()
-    
-    def displayStateVisualization(self):
-        self.stateVisualization = StateWindow(self)
-        self.stateVisualization.show()
-        self.hide()
-        
-    def playVideo(self):
-        self.mediaPlayer.play()
-        
-    def pauseVideo(self):
-        self.mediaPlayer.pause()
-        
-    def continueToResults(self):
-        self.results = ResultWindow(self)
-        self.results.show()
-        self.hide()
-
 
 class ResultWindow(QDialog):
     def __init__(self, parent=None):
