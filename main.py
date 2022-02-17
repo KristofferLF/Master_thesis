@@ -1,5 +1,8 @@
 from PySide2 import QtCore
-from PySide2.QtGui import QPixmap
+from vtkmodules.vtkFiltersSources import vtkConeSource
+from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+import vtkmodules.vtkRenderingOpenGL2
+from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
 from PySide2.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget
 import sys
 from functools import partial
@@ -263,6 +266,24 @@ class StateWindow(QDialog):
         window = QWidget()
         self.setWindowTitle("Stirling engine state visualization")
         
+        widget = QVTKRenderWindowInteractor()
+        widget.Initialize()
+        widget.Start()
+        
+        ren = vtkRenderer()
+        widget.GetRenderWindow().AddRenderer(ren)
+        
+        cone = vtkConeSource()
+        cone.SetResolution(8)
+
+        coneMapper = vtkPolyDataMapper()
+        coneMapper.SetInputConnection(cone.GetOutputPort())
+
+        coneActor = vtkActor()
+        coneActor.SetMapper(coneMapper)
+
+        ren.AddActor(coneActor)
+        
         # Create widgets
         self.prompt = QLabel("Steps in a stirling engine.")
         self.prompt.setAlignment(QtCore.Qt.AlignCenter)
@@ -291,12 +312,11 @@ class StateWindow(QDialog):
         
         # Create layout and add widgets
         layout = QGridLayout(window)
-        
+        layout.addWidget(widget, 0, 0, 5, 5)
         layout.addWidget(self.nav1Button, 5, 1, 1, 1)
         layout.addWidget(self.nav2Button, 5, 2, 1, 1)
         layout.addWidget(self.nav3Button, 5, 3, 1, 1)
         layout.addWidget(self.nav4Button, 5, 4, 1, 1)
-        
         layout.addWidget(self.prompt, 0, 7, 1, 5)
         layout.addWidget(self.returnButton, 5, 8, 1, 1)
         layout.addWidget(self.continueButton, 5, 10, 1, 1)
