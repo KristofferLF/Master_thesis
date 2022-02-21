@@ -269,14 +269,10 @@ class StateWindow(QDialog):
         self.setWindowTitle("Stirling engine state visualization")
         
         self.widget = QVTKRenderWindowInteractor()
-        self.widget.setGeometry(QtCore.QRect(20,20,450,800))
         self.widget.setFixedSize(450, 800)
         self.widget.Initialize()
         self.widget.Start()
         
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.widget.setSizePolicy(sizePolicy)
-    
         self.stirlingAnimation = StirlingAnimation()
         
         self.ren = self.stirlingAnimation.getRenderer()
