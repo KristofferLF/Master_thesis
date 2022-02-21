@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 # noinspection PyUnresolvedReferences
-from matplotlib.pyplot import step
 import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import time
@@ -29,8 +28,7 @@ class StirlingAnimation():
         self.flywheelRadius = 120
         self.pistonHeight = self.offsetCenterAxis + 240
         
-        step = 0
-        maxSteps = 360
+        degree = 0
         
         colors = vtkNamedColors()
         
@@ -173,8 +171,8 @@ class StirlingAnimation():
         rightPistonMapper.SetInputData(rightPistonPolydata)
         rightPistonMapper.Update()
         
-        expansionVolumeMapper = self.generateExpansionVolumeMapper(self.calculateHeight(step), self.calculateColorScale(step))    
-        compressionVolumeMapper = self.generateCompressionVolumeMapper(- self.calculateHeight(step), self.calculateColorScale(-step))
+        expansionVolumeMapper = self.generateExpansionVolumeMapper(self.calculateHeight(degree), self.calculateColorScale(degree))    
+        compressionVolumeMapper = self.generateCompressionVolumeMapper(- self.calculateHeight(degree), self.calculateColorScale(-degree))
         
         regeneratorMapper = vtkPolyDataMapper2D()
         regeneratorMapper.SetInputData(regeneratorPolydata)
@@ -229,19 +227,19 @@ class StirlingAnimation():
         self.flywheelCenterRadiusActor.GetProperty().SetColor(colors.GetColor3d('Black'))
         
         self.expansionPistonAnchorActor = vtkActor2D()
-        self.expansionPistonAnchorActor.SetMapper(self.generateExpansionPistonAnchorMapper(step))
+        self.expansionPistonAnchorActor.SetMapper(self.generateExpansionPistonAnchorMapper(degree))
         self.expansionPistonAnchorActor.GetProperty().SetColor(colors.GetColor3d('LightGrey'))
         
         self.compressionPistonAnchorActor = vtkActor2D()
-        self.compressionPistonAnchorActor.SetMapper(self.generateCompressionPistonAnchorMapper(step))
+        self.compressionPistonAnchorActor.SetMapper(self.generateCompressionPistonAnchorMapper(degree))
         self.compressionPistonAnchorActor.GetProperty().SetColor(colors.GetColor3d('LightGrey'))
         
         self.expansionPistonRodActor = vtkActor2D()
-        self.expansionPistonRodActor.SetMapper(self.generateExpansionPistonRodMapper(step))
+        self.expansionPistonRodActor.SetMapper(self.generateExpansionPistonRodMapper(degree))
         self.expansionPistonRodActor.GetProperty().SetColor(colors.GetColor3d('DarkSlateGray'))
         
         self.compressionPistonRodActor = vtkActor2D()
-        self.compressionPistonRodActor.SetMapper(self.generateCompressionPistonRodMapper(step))
+        self.compressionPistonRodActor.SetMapper(self.generateCompressionPistonRodMapper(degree))
         self.compressionPistonRodActor.GetProperty().SetColor(colors.GetColor3d('DarkSlateGray'))
         
         # Create a renderer, render window, and interactor
@@ -276,7 +274,7 @@ class StirlingAnimation():
         #self.renderWindow.Render()
         
         # TODO Remove 'While'-loop and place it outside the function
-        # TODO Add input-values for 'step' / 'degree' and potentially other values.
+        # TODO Add input-values for 'degree' / 'degree' and potentially other values.
         # TODO Add descriptions and documentation
         
         # w2if = vtkWindowToImageFilter()
@@ -291,19 +289,19 @@ class StirlingAnimation():
         # Eventually just animate a single frame with a long sleep-function
         #self.renderWindowInteractor.Start()
         
-    def animateStep(self, step):
-            self.leftPistonActor.SetPosition([0, self.calculateHeight(step)])
-            self.rightPistonActor.SetPosition([0, - self.calculateHeight(step)])
+    def animateStep(self, degree):
+            self.leftPistonActor.SetPosition([0, self.calculateHeight(degree)])
+            self.rightPistonActor.SetPosition([0, - self.calculateHeight(degree)])
             
             # TODO Add preloading of the next mapper and save it for hotswap
-            self.expansionVolumeActor.SetMapper(self.generateExpansionVolumeMapper(self.calculateHeight(step) + 1, self.calculateColorScale(step)))
-            self.compressionVolumeActor.SetMapper(self.generateCompressionVolumeMapper(- self.calculateHeight(step) + 1, self.calculateColorScale(-step)))
+            self.expansionVolumeActor.SetMapper(self.generateExpansionVolumeMapper(self.calculateHeight(degree) + 1, self.calculateColorScale(degree)))
+            self.compressionVolumeActor.SetMapper(self.generateCompressionVolumeMapper(- self.calculateHeight(degree) + 1, self.calculateColorScale(-degree)))
             
-            self.expansionPistonAnchorActor.SetMapper(self.generateExpansionPistonAnchorMapper(step))
-            self.compressionPistonAnchorActor.SetMapper(self.generateCompressionPistonAnchorMapper(step))
+            self.expansionPistonAnchorActor.SetMapper(self.generateExpansionPistonAnchorMapper(degree))
+            self.compressionPistonAnchorActor.SetMapper(self.generateCompressionPistonAnchorMapper(degree))
             
-            self.expansionPistonRodActor.SetMapper(self.generateExpansionPistonRodMapper(step))
-            self.compressionPistonRodActor.SetMapper(self.generateCompressionPistonRodMapper(step))
+            self.expansionPistonRodActor.SetMapper(self.generateExpansionPistonRodMapper(degree))
+            self.compressionPistonRodActor.SetMapper(self.generateCompressionPistonRodMapper(degree))
             
             self.renderWindow.Render()
     
@@ -423,12 +421,12 @@ class StirlingAnimation():
         
         return compressionPistonAnchorMapper
 
-    def generateExpansionPistonRodMapper(self, step):
+    def generateExpansionPistonRodMapper(self, degree):
         expansionPistonRodPoints = vtkPoints()
         
-        expansionPistonRodVertices = [(90, self.calculateHeight(step) + self.pistonHeight - 1, 1), (110, self.calculateHeight(step) + self.pistonHeight - 1, 1),
-                                    (self.calculateHorizontalMovement(step) + self.flywheelHorizontalCenter + 10, self.calculateVerticalMovement(step) + self.flywheelVerticalCenter, 0),
-                                    (self.calculateHorizontalMovement(step) + self.flywheelHorizontalCenter - 10, self.calculateVerticalMovement(step) + self.flywheelVerticalCenter, 0)]
+        expansionPistonRodVertices = [(90, self.calculateHeight(degree) + self.pistonHeight - 1, 1), (110, self.calculateHeight(degree) + self.pistonHeight - 1, 1),
+                                    (self.calculateHorizontalMovement(degree) + self.flywheelHorizontalCenter + 10, self.calculateVerticalMovement(degree) + self.flywheelVerticalCenter, 0),
+                                    (self.calculateHorizontalMovement(degree) + self.flywheelHorizontalCenter - 10, self.calculateVerticalMovement(degree) + self.flywheelVerticalCenter, 0)]
         
         for point in expansionPistonRodVertices:
             expansionPistonRodPoints.InsertNextPoint(point)
@@ -449,12 +447,12 @@ class StirlingAnimation():
         
         return expansionPistonRodMapper
 
-    def generateCompressionPistonRodMapper(self, step):
+    def generateCompressionPistonRodMapper(self, degree):
         compressionPistonRodPoints = vtkPoints()
         
-        compressionPistonRodVertices = [(340, - self.calculateHeight(step) + self.pistonHeight - 1, 1), (360, - self.calculateHeight(step) + self.pistonHeight - 1, 1),
-                                    (- self.calculateHorizontalMovement(step) + self.flywheelHorizontalCenter + 10, - self.calculateVerticalMovement(step) + self.flywheelVerticalCenter, 0),
-                                    (- self.calculateHorizontalMovement(step) + self.flywheelHorizontalCenter - 10, - self.calculateVerticalMovement(step) + self.flywheelVerticalCenter, 0)]
+        compressionPistonRodVertices = [(340, - self.calculateHeight(degree) + self.pistonHeight - 1, 1), (360, - self.calculateHeight(degree) + self.pistonHeight - 1, 1),
+                                    (- self.calculateHorizontalMovement(degree) + self.flywheelHorizontalCenter + 10, - self.calculateVerticalMovement(degree) + self.flywheelVerticalCenter, 0),
+                                    (- self.calculateHorizontalMovement(degree) + self.flywheelHorizontalCenter - 10, - self.calculateVerticalMovement(degree) + self.flywheelVerticalCenter, 0)]
         
         for point in compressionPistonRodVertices:
             compressionPistonRodPoints.InsertNextPoint(point)
@@ -496,16 +494,13 @@ class StirlingAnimation():
     
     def getRenderer(self):
         return self.renderer
-    
-    def getRenderWindow(self):
-        return self.renderWindow
 
 if __name__ == '__main__':
     stirlingClass = StirlingAnimation()
-    step = 0
+    degree = 0
     maxStep = 1080
     
-    while (step < maxStep):
+    while (degree < maxStep):
         time.sleep(0.025)
-        stirlingClass.animateStep(step)
-        step += 1
+        stirlingClass.animateStep(degree)
+        degree += 1

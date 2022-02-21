@@ -296,26 +296,18 @@ class StateWindow(QDialog):
         self.continueButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
         # Create navigation-buttons
-        self.nav1Button = QPushButton("1")
-        self.nav1Button.setFixedSize(30, 30)
-        self.nav1Button.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.nav2Button = QPushButton("2")
-        self.nav2Button.setFixedSize(30, 30)
-        self.nav2Button.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.nav3Button = QPushButton("3")
-        self.nav3Button.setFixedSize(30, 30)
-        self.nav3Button.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.nav4Button = QPushButton("4")
-        self.nav4Button.setFixedSize(30, 30)
-        self.nav4Button.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.playButton = QPushButton("Play")
+        self.playButton.setFixedSize(100, 50)
+        self.playButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.pauseButton = QPushButton("Pause")
+        self.pauseButton.setFixedSize(100, 50)
+        self.pauseButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
         # Create layout and add widgets
         layout = QGridLayout(window)
         layout.addWidget(self.widget, 0, 0, 10, 5)
-        layout.addWidget(self.nav1Button, 11, 1, 1, 1)
-        layout.addWidget(self.nav2Button, 11, 2, 1, 1)
-        layout.addWidget(self.nav3Button, 11, 3, 1, 1)
-        layout.addWidget(self.nav4Button, 11, 4, 1, 1)
+        layout.addWidget(self.playButton, 11, 1, 1, 1)
+        layout.addWidget(self.pauseButton, 11, 3, 1, 1)
         layout.addWidget(self.prompt, 0, 7, 1, 5)
         layout.addWidget(self.returnButton, 11, 8, 1, 1)
         layout.addWidget(self.continueButton, 11, 10, 1, 1)
@@ -324,8 +316,15 @@ class StateWindow(QDialog):
         self.setLayout(layout)
         
         # Connect buttons
+        self.playButton.clicked.connect(self.playAnimation)
         self.returnButton.clicked.connect(self.returnToIntro)
         self.continueButton.clicked.connect(self.continueToResults)
+        
+    def playAnimation(self):
+        print("")
+        
+    def showFrame(self, degree):
+        print("")
         
     def returnToIntro(self):
         self.intro = Intro(self)
