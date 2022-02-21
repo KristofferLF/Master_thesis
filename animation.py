@@ -270,10 +270,10 @@ class StirlingAnimation():
         self.renderer.SetBackground(colors.GetColor3d('White'))
         self.renderWindow.SetWindowName('Animation of Stirling Engine')
 
-        self.renderWindowInteractor.Initialize()
+        #self.renderWindowInteractor.Initialize()
 
         # Render and interact
-        self.renderWindow.Render()
+        #self.renderWindow.Render()
         
         # TODO Remove 'While'-loop and place it outside the function
         # TODO Add input-values for 'step' / 'degree' and potentially other values.
@@ -474,11 +474,36 @@ class StirlingAnimation():
         compressionPistonRodMapper.Update()
         
         return compressionPistonRodMapper
+    
+    def getActors(self):
+        actorList = []
+        
+        actorList.append(self.cylinderActor)
+        actorList.append(self.leftPistonActor)
+        actorList.append(self.rightPistonActor)
+        actorList.append(self.expansionVolumeActor)
+        actorList.append(self.compressionVolumeActor)
+        actorList.append(self.regeneratorActor)
+        actorList.append(self.flywheelActor)
+        actorList.append(self.flywheelCenterActor)
+        actorList.append(self.flywheelCenterRadiusActor)
+        actorList.append(self.expansionPistonRodActor)
+        actorList.append(self.expansionPistonAnchorActor)
+        actorList.append(self.compressionPistonRodActor)
+        actorList.append(self.compressionPistonAnchorActor)
+        
+        return actorList
+    
+    def getRenderer(self):
+        return self.renderer
+    
+    def getRenderWindow(self):
+        return self.renderWindow
 
 if __name__ == '__main__':
     stirlingClass = StirlingAnimation()
     step = 0
-    maxStep = 360
+    maxStep = 1080
     
     while (step < maxStep):
         time.sleep(0.025)

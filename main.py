@@ -1,3 +1,4 @@
+import PySide2
 from PySide2 import QtCore
 from vtkmodules.vtkFiltersSources import vtkConeSource
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -9,9 +10,10 @@ from functools import partial
 from PySide2.QtMultimediaWidgets import QVideoWidget
 from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtCore import QUrl
-from PySide2 import QtGui
+from PySide2 import QtGui, QtWidgets
 from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
 from schmidt import schmidtAnalysis, plotSchmidtAnalysis
+from animation import StirlingAnimation
 import sys
 
 def checkValues(values):
@@ -266,23 +268,24 @@ class StateWindow(QDialog):
         window = QWidget()
         self.setWindowTitle("Stirling engine state visualization")
         
-        widget = QVTKRenderWindowInteractor()
-        widget.Initialize()
-        widget.Start()
+        self.widget = QVTKRenderWindowInteractor()
+        self.widget.setGeometry(QtCore.QRect(20,20,450,800))
+        self.widget.setFixedSize(450, 800)
+        self.widget.Initialize()
+        self.widget.Start()
         
-        ren = vtkRenderer()
-        widget.GetRenderWindow().AddRenderer(ren)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.widget.setSizePolicy(sizePolicy)
+    
+        self.stirlingAnimation = StirlingAnimation()
         
-        cone = vtkConeSource()
-        cone.SetResolution(8)
+        self.ren = self.stirlingAnimation.getRenderer()
+        self.widget.GetRenderWindow().AddRenderer(self.ren)
+        
+        self.ren.Render()
 
-        coneMapper = vtkPolyDataMapper()
-        coneMapper.SetInputConnection(cone.GetOutputPort())
-
-        coneActor = vtkActor()
-        coneActor.SetMapper(coneMapper)
-
-        ren.AddActor(coneActor)
+        for actor in self.stirlingAnimation.getActors():
+            self.ren.AddActor(actor)
         
         # Create widgets
         self.prompt = QLabel("Steps in a stirling engine.")
@@ -312,14 +315,14 @@ class StateWindow(QDialog):
         
         # Create layout and add widgets
         layout = QGridLayout(window)
-        layout.addWidget(widget, 0, 0, 5, 5)
-        layout.addWidget(self.nav1Button, 5, 1, 1, 1)
-        layout.addWidget(self.nav2Button, 5, 2, 1, 1)
-        layout.addWidget(self.nav3Button, 5, 3, 1, 1)
-        layout.addWidget(self.nav4Button, 5, 4, 1, 1)
+        layout.addWidget(self.widget, 0, 0, 10, 5)
+        layout.addWidget(self.nav1Button, 11, 1, 1, 1)
+        layout.addWidget(self.nav2Button, 11, 2, 1, 1)
+        layout.addWidget(self.nav3Button, 11, 3, 1, 1)
+        layout.addWidget(self.nav4Button, 11, 4, 1, 1)
         layout.addWidget(self.prompt, 0, 7, 1, 5)
-        layout.addWidget(self.returnButton, 5, 8, 1, 1)
-        layout.addWidget(self.continueButton, 5, 10, 1, 1)
+        layout.addWidget(self.returnButton, 11, 8, 1, 1)
+        layout.addWidget(self.continueButton, 11, 10, 1, 1)
         
         # Set layout
         self.setLayout(layout)
@@ -401,7 +404,6 @@ class ResultWindow(QDialog):
         # Connect buttons
         self.returnButton.clicked.connect(self.returnToStateVisualization)
         self.exitButton.clicked.connect(self.exitApplication)
-        
     
     def returnToStateVisualization(self):
         self.stateVisualization = StateWindow(self)
