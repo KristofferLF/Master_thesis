@@ -278,10 +278,10 @@ class StateWindow(QDialog):
         self.ren = self.stirlingAnimation.getRenderer()
         self.widget.GetRenderWindow().AddRenderer(self.ren)
         
-        self.ren.Render()
-
         for actor in self.stirlingAnimation.getActors():
             self.ren.AddActor(actor)
+        
+        self.ren.Render()
         
         # Create widgets
         self.prompt = QLabel("Steps in a stirling engine.")
@@ -319,7 +319,7 @@ class StateWindow(QDialog):
         self.playButton.clicked.connect(self.playAnimation)
         self.returnButton.clicked.connect(self.returnToIntro)
         self.continueButton.clicked.connect(self.continueToResults)
-        
+            
     def playAnimation(self):
         print("")
         
@@ -362,10 +362,10 @@ class ResultWindow(QDialog):
         self.csv_message.setObjectName("result_message")
 
         self.returnButton = QPushButton("Return")
-        self.returnButton.setFixedSize(100, 50)
+        self.returnButton.setFixedSize(150, 50)
         self.returnButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.exitButton = QPushButton("Exit application")
-        self.exitButton.setFixedSize(100, 50)
+        self.exitButton.setFixedSize(150, 50)
         self.exitButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
         # Create layout and add widgets

@@ -501,6 +501,6 @@ if __name__ == '__main__':
     maxStep = 1080
     
     while (degree < maxStep):
-        time.sleep(0.025)
+        time.sleep(0.015)
         stirlingClass.animateStep(degree)
         degree += 1
