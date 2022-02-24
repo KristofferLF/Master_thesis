@@ -17,6 +17,7 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderWindowInteractor,
     vtkRenderer
 )
+from PySide2.QtCore import QTimer
 
 
 class StirlingAnimation():

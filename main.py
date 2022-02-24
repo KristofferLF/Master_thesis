@@ -1,3 +1,5 @@
+import signal
+import time
 import PySide2
 from PySide2 import QtCore
 from vtkmodules.vtkFiltersSources import vtkConeSource
@@ -9,11 +11,12 @@ import sys
 from functools import partial
 from PySide2.QtMultimediaWidgets import QVideoWidget
 from PySide2.QtMultimedia import QMediaPlayer
-from PySide2.QtCore import QUrl
+from PySide2.QtCore import QUrl, QTimer, QObject
 from PySide2 import QtGui, QtWidgets
 from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
 from schmidt import schmidtAnalysis, plotSchmidtAnalysis
 from animation import StirlingAnimation
+from vtkmodules.vtkFiltersSources import vtkCubeSource
 import sys
 
 def checkValues(values):
@@ -271,23 +274,57 @@ class StateWindow(QDialog):
         self.widget = QVTKRenderWindowInteractor()
         self.widget.setFixedSize(450, 800)
         self.widget.Initialize()
-        self.widget.Start()
+        #self.widget.Start()
+        
+        self.degree = 0
         
         self.stirlingAnimation = StirlingAnimation()
         
         self.ren = self.stirlingAnimation.getRenderer()
         self.widget.GetRenderWindow().AddRenderer(self.ren)
         
-        for actor in self.stirlingAnimation.getActors():
-            self.ren.AddActor(actor)
+        actorList = self.stirlingAnimation.getActors()
+        
+        self.cylinderActor = actorList[0]
+        self.leftPistonActor = actorList[1]
+        self.rightPistonActor = actorList[2]
+        self.expansionVolumeActor = actorList[3]
+        self.compressionVolumeActor = actorList[4]
+        self.regeneratorActor = actorList[5]
+        self.flywheelActor = actorList[6]
+        self.flywheelCenterActor = actorList[7]
+        self.flywheelCenterRadiusActor = actorList[8]
+        self.expansionPistonRodActor = actorList[9]
+        self.expansionPistonAnchorActor = actorList[10]
+        self.compressionPistonRodActor = actorList[11]
+        self.compressionPistonAnchorActor = actorList[12]
+        
+        self.ren.AddActor(self.cylinderActor)
+        self.ren.AddActor(self.leftPistonActor)
+        self.ren.AddActor(self.rightPistonActor)
+        self.ren.AddActor(self.expansionVolumeActor)
+        self.ren.AddActor(self.compressionVolumeActor)
+        self.ren.AddActor(self.regeneratorActor)
+        self.ren.AddActor(self.flywheelActor)
+        self.ren.AddActor(self.flywheelCenterActor)
+        self.ren.AddActor(self.flywheelCenterActor)
+        self.ren.AddActor(self.flywheelCenterRadiusActor)
+        self.ren.AddActor(self.expansionPistonRodActor)
+        self.ren.AddActor(self.expansionPistonAnchorActor)
+        self.ren.AddActor(self.compressionPistonRodActor)
+        self.ren.AddActor(self.compressionPistonAnchorActor)
         
         self.ren.Render()
+        
+        #self.updateActors(90)
         
         # Create widgets
         self.prompt = QLabel("Steps in a stirling engine.")
         self.prompt.setAlignment(QtCore.Qt.AlignCenter)
         self.prompt.setFixedSize(300, 100)
         self.prompt.setObjectName("prompt")
+        self.degreeText = QLineEdit()
+        self.degreeText.setFixedSize(150, 30)
         self.returnButton = QPushButton("Return")
         self.returnButton.setFixedSize(100, 50)
         self.returnButton.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -302,6 +339,9 @@ class StateWindow(QDialog):
         self.pauseButton = QPushButton("Pause")
         self.pauseButton.setFixedSize(100, 50)
         self.pauseButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.showFrameButton = QPushButton("Show")
+        self.showFrameButton.setFixedSize(100, 50)
+        self.showFrameButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
         # Create layout and add widgets
         layout = QGridLayout(window)
@@ -309,22 +349,68 @@ class StateWindow(QDialog):
         layout.addWidget(self.playButton, 11, 1, 1, 1)
         layout.addWidget(self.pauseButton, 11, 3, 1, 1)
         layout.addWidget(self.prompt, 0, 7, 1, 5)
+        layout.addWidget(self.degreeText, 5, 8, 1, 1)
         layout.addWidget(self.returnButton, 11, 8, 1, 1)
         layout.addWidget(self.continueButton, 11, 10, 1, 1)
+        layout.addWidget(self.showFrameButton, 5, 10, 1, 1)
         
         # Set layout
         self.setLayout(layout)
         
         # Connect buttons
         self.playButton.clicked.connect(self.playAnimation)
+        self.showFrameButton.clicked.connect(self.showFrame)
         self.returnButton.clicked.connect(self.returnToIntro)
         self.continueButton.clicked.connect(self.continueToResults)
             
-    def playAnimation(self):
-        print("")
+    def updateActors(self, degree):
+        #self.__cleanRenderer()
         
-    def showFrame(self, degree):
-        print("")
+        self.leftPistonActor.SetPosition([0, self.stirlingAnimation.calculateHeight(degree)])
+        self.rightPistonActor.SetPosition([0, - self.stirlingAnimation.calculateHeight(degree)])
+        
+        # TODO Add preloading of the next mapper and save it for hotswap
+        self.expansionVolumeActor.SetMapper(self.stirlingAnimation.generateExpansionVolumeMapper(self.stirlingAnimation.calculateHeight(degree) + 1, self.stirlingAnimation.calculateColorScale(degree)))
+        self.compressionVolumeActor.SetMapper(self.stirlingAnimation.generateCompressionVolumeMapper(- self.stirlingAnimation.calculateHeight(degree) + 1, self.stirlingAnimation.calculateColorScale(-degree)))
+        
+        self.expansionPistonAnchorActor.SetMapper(self.stirlingAnimation.generateExpansionPistonAnchorMapper(degree))
+        self.compressionPistonAnchorActor.SetMapper(self.stirlingAnimation.generateCompressionPistonAnchorMapper(degree))
+        
+        self.expansionPistonRodActor.SetMapper(self.stirlingAnimation.generateExpansionPistonRodMapper(degree))
+        self.compressionPistonRodActor.SetMapper(self.stirlingAnimation.generateCompressionPistonRodMapper(degree))
+        
+        self.ren.Render()
+        
+        self.widget.update()
+        
+        #time.sleep(0.03)
+            
+    def playAnimation(self):
+        step = 0
+        maxStep = self.degree + 90
+        self.degree = maxStep
+        going = True
+        
+        while going:
+            self.updateActors(step)
+            if step >= maxStep:
+                going = False
+                
+            step += 1
+            #self.ren.Render()
+            
+            self.widget.update()
+            
+            #self.widget.hide()
+            #self.widget.show()
+            
+            #time.sleep(0.02)
+        
+    def showFrame(self):
+        if (self.degreeText.text().isdigit()):
+            self.degree = int(self.degreeText.text())
+            print(self.degree)
+            self.updateActors(self.degree)
         
     def returnToIntro(self):
         self.intro = Intro(self)
@@ -335,7 +421,7 @@ class StateWindow(QDialog):
         self.results = ResultWindow(self)
         self.results.show()
         self.hide()
-
+        
 class ResultWindow(QDialog):
     def __init__(self, parent=None):
         super(ResultWindow, self).__init__(parent)
