@@ -271,7 +271,7 @@ class StateWindow(QDialog):
         window = QWidget()
         self.setWindowTitle("Stirling engine state visualization")
         
-        self.widget = QVTKRenderWindowInteractor()
+        self.widget = QVTKRenderWindowInteractor(window)
         self.widget.setFixedSize(450, 800)
         self.widget.Initialize()
         #self.widget.Start()
@@ -366,6 +366,7 @@ class StateWindow(QDialog):
     def updateActors(self, degree):
         #self.__cleanRenderer()
         
+        # TODO Flush render
         self.leftPistonActor.SetPosition([0, self.stirlingAnimation.calculateHeight(degree)])
         self.rightPistonActor.SetPosition([0, - self.stirlingAnimation.calculateHeight(degree)])
         
@@ -379,6 +380,8 @@ class StateWindow(QDialog):
         self.expansionPistonRodActor.SetMapper(self.stirlingAnimation.generateExpansionPistonRodMapper(degree))
         self.compressionPistonRodActor.SetMapper(self.stirlingAnimation.generateCompressionPistonRodMapper(degree))
         
+        print("Degree: " + str(degree))
+        
         self.ren.Render()
         
         self.widget.update()
@@ -386,20 +389,20 @@ class StateWindow(QDialog):
         #time.sleep(0.03)
             
     def playAnimation(self):
-        step = 0
+        step = self.degree
         maxStep = self.degree + 90
         self.degree = maxStep
         going = True
         
         while going:
             self.updateActors(step)
+            self.widget.update()
             if step >= maxStep:
                 going = False
                 
             step += 1
             #self.ren.Render()
             
-            self.widget.update()
             
             #self.widget.hide()
             #self.widget.show()
@@ -409,7 +412,6 @@ class StateWindow(QDialog):
     def showFrame(self):
         if (self.degreeText.text().isdigit()):
             self.degree = int(self.degreeText.text())
-            print(self.degree)
             self.updateActors(self.degree)
         
     def returnToIntro(self):
