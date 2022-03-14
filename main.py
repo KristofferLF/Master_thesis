@@ -1,22 +1,20 @@
 import signal
 import time
-import PySide2
-from PySide2 import QtCore
-from vtkmodules.vtkFiltersSources import vtkConeSource
+import PyQt5
+from PyQt5 import QtCore
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtkmodules.vtkRenderingOpenGL2
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
-from PySide2.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget
+from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget
 import sys
 from functools import partial
-from PySide2.QtMultimediaWidgets import QVideoWidget
-from PySide2.QtMultimedia import QMediaPlayer
-from PySide2.QtCore import QUrl, QTimer, QObject
-from PySide2 import QtGui, QtWidgets
+from PyQt5.QtMultimediaWidgets import QVideoWidget
+from PyQt5.QtMultimedia import QMediaPlayer
+from PyQt5.QtCore import QUrl, QTimer, QObject, pyqtSignal, pyqtProperty, QPropertyAnimation, QPoint
+from PyQt5 import QtGui, QtWidgets, QtOpenGL
 from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
 from schmidt import schmidtAnalysis, plotSchmidtAnalysis
-from animation import StirlingAnimation
-from vtkmodules.vtkFiltersSources import vtkCubeSource
+from animation import StirlingAnimation, ActorTroup
 import sys
 
 def checkValues(values):
@@ -81,10 +79,18 @@ class Intro(QDialog):
         
         # Connect button 
         self.defaultButton.clicked.connect(self.useDefaultValues)
+        #self.defaultButton.clicked.connect(self.testWindow)
         self.customButton.clicked.connect(self.useCustomValues)
         self.inputButton.clicked.connect(self.manualInput)
 
     # Method for navigation
+
+    def testWindow(self):
+        self.testWindow = TestWindow()
+        self.testWindow.show()
+        
+        if self.isVisible():
+            self.hide()
 
     def manualInput(self):
         self.manualInput = ManualInput(self)
@@ -114,7 +120,6 @@ class Intro(QDialog):
             self.stateVisualization = StateWindow(self)
             self.stateVisualization.show()
             self.hide()
-
 
 class ManualInput(QDialog):
     def __init__(self, parent=None):
@@ -266,20 +271,21 @@ class ManualInput(QDialog):
             self.hide()
 
 class StateWindow(QDialog):
+    
+    valueChanged = pyqtSignal(int)
+    
     def __init__(self, parent=None):
         super(StateWindow, self).__init__(parent)
-        window = QWidget()
+        window = QtOpenGL.QGLWidget()
         self.setWindowTitle("Stirling engine state visualization")
         
         self.widget = QVTKRenderWindowInteractor(window)
         self.widget.setFixedSize(450, 800)
         self.widget.Initialize()
         #self.widget.Start()
-        
-        self.degree = 0
+        self._degree = 0
         
         self.stirlingAnimation = StirlingAnimation()
-        
         self.ren = self.stirlingAnimation.getRenderer()
         self.widget.GetRenderWindow().AddRenderer(self.ren)
         
@@ -316,7 +322,10 @@ class StateWindow(QDialog):
         
         self.ren.Render()
         
-        #self.updateActors(90)
+        self.animation = QPropertyAnimation(self, b"degree")
+        self.animation.setEndValue(720)
+        self.animation.setDuration(15000)
+        self.animation.start()
         
         # Create widgets
         self.prompt = QLabel("Steps in a stirling engine.")
@@ -359,9 +368,21 @@ class StateWindow(QDialog):
         
         # Connect buttons
         self.playButton.clicked.connect(self.playAnimation)
+        self.playButton.clicked.connect(self.pauseAnimation)
         self.showFrameButton.clicked.connect(self.showFrame)
         self.returnButton.clicked.connect(self.returnToIntro)
         self.continueButton.clicked.connect(self.continueToResults)
+        
+    @pyqtProperty(int)
+    def degree(self):
+        return self._degree
+    
+    @degree.setter
+    def degree(self, degree):
+        if (degree != self._degree):
+            self._degree = degree
+            self.updateActors(degree)
+            self.valueChanged.emit(degree)
             
     def updateActors(self, degree):
         #self.__cleanRenderer()
@@ -385,30 +406,16 @@ class StateWindow(QDialog):
         self.ren.Render()
         
         self.widget.update()
-        
-        #time.sleep(0.03)
             
     def playAnimation(self):
-        step = self.degree
-        maxStep = self.degree + 90
-        self.degree = maxStep
-        going = True
+        print("PRESSED!")
+        self.animation.start()
+        self.ren.Render()
+        self.widget.update()
         
-        while going:
-            self.updateActors(step)
-            self.widget.update()
-            if step >= maxStep:
-                going = False
-                
-            step += 1
-            #self.ren.Render()
-            
-            
-            #self.widget.hide()
-            #self.widget.show()
-            
-            #time.sleep(0.02)
-        
+    def pauseAnimation(self):
+        self.animation.stop()    
+    
     def showFrame(self):
         if (self.degreeText.text().isdigit()):
             self.degree = int(self.degreeText.text())
@@ -496,6 +503,35 @@ class ResultWindow(QDialog):
     def exitApplication(self):
         sys.exit()
 
+class TestWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.resize(600, 600)
+        self.child = QWidget(self)
+        self.child.setStyleSheet("background-color:red;border-radius:15px;")
+        self.child.resize(100, 100)
+        self.anim = QPropertyAnimation(self.child, b"pos")
+        self.anim.setEndValue(QPoint(400, 400))
+        self.anim.setDuration(1500)
+        self.anim.start()
+
+class TestClass(QObject):
+    
+    valueChanged = pyqtSignal(int)
+    
+    def __init__(self):
+        super().__init__()
+        self._value = 0
+    
+    @pyqtProperty(int)
+    def value(self):
+        return self._value
+    
+    @value.setter
+    def value(self, value):
+        if (value != self._value):
+            self._value = value
+            self.valueChanged.emit(value)
 
 if __name__ == '__main__':
     # Create the Qt Application

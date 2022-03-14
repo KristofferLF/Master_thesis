@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # noinspection PyUnresolvedReferences
+import PyQt5
 import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import time
@@ -17,7 +18,7 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderWindowInteractor,
     vtkRenderer
 )
-from PySide2.QtCore import QTimer
+from PyQt5.QtCore import QUrl, QTimer, QObject, pyqtSignal, pyqtProperty
 
 
 class StirlingAnimation():
@@ -495,6 +496,77 @@ class StirlingAnimation():
     
     def getRenderer(self):
         return self.renderer
+    
+class LeftPiston(QObject):
+    
+    valueChanged = pyqtSignal(int)
+    
+    def __init__(self):
+        super().__init__()
+        self._mapper = 0
+    
+    @pyqtProperty(int)
+    def mapper(self):
+        return self._mapper
+    
+    @mapper.setter
+    def mapper(self, mapper):
+        if (mapper != self._mapper):
+            self._mapper = mapper
+            self.valueChanged.emit(mapper)
+    
+class ActorTroup(QObject):
+    
+    valueChanged = pyqtSignal(int)
+    
+    def __init__(self):
+        super().__init__()
+        self._degree = 0
+        
+        self.stirlingAnimation = StirlingAnimation()
+        
+        actorList = self.stirlingAnimation.getActors()
+        
+        self.cylinderActor = actorList[0]
+        self.leftPistonActor = actorList[1]
+        self.rightPistonActor = actorList[2]
+        self.expansionVolumeActor = actorList[3]
+        self.compressionVolumeActor = actorList[4]
+        self.regeneratorActor = actorList[5]
+        self.flywheelActor = actorList[6]
+        self.flywheelCenterActor = actorList[7]
+        self.flywheelCenterRadiusActor = actorList[8]
+        self.expansionPistonRodActor = actorList[9]
+        self.expansionPistonAnchorActor = actorList[10]
+        self.compressionPistonRodActor = actorList[11]
+        self.compressionPistonAnchorActor = actorList[12]
+    
+    @pyqtProperty(int)
+    def degree(self):
+        return self._degree
+    
+    @degree.setter
+    def degree(self, degree):
+        if (degree != self._degree):
+            self._degree = degree
+            self.updateActors(degree)
+            self.valueChanged.emit(degree)
+            
+    def updateActors(self, degree):
+        self.leftPistonActor.SetPosition([0, self.stirlingAnimation.calculateHeight(degree)])
+        self.rightPistonActor.SetPosition([0, - self.stirlingAnimation.calculateHeight(degree)])
+        
+        self.expansionVolumeActor.SetMapper(self.stirlingAnimation.generateExpansionVolumeMapper(self.stirlingAnimation.calculateHeight(degree) + 1, self.stirlingAnimation.calculateColorScale(degree)))
+        self.compressionVolumeActor.SetMapper(self.stirlingAnimation.generateCompressionVolumeMapper(- self.stirlingAnimation.calculateHeight(degree) + 1, self.stirlingAnimation.calculateColorScale(-degree)))
+        
+        self.expansionPistonAnchorActor.SetMapper(self.stirlingAnimation.generateExpansionPistonAnchorMapper(degree))
+        self.compressionPistonAnchorActor.SetMapper(self.stirlingAnimation.generateCompressionPistonAnchorMapper(degree))
+        
+        self.expansionPistonRodActor.SetMapper(self.stirlingAnimation.generateExpansionPistonRodMapper(degree))
+        self.compressionPistonRodActor.SetMapper(self.stirlingAnimation.generateCompressionPistonRodMapper(degree))
+        
+        print("Degree: " + str(degree))
+
 
 if __name__ == '__main__':
     stirlingClass = StirlingAnimation()
