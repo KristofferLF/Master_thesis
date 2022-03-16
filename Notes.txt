@@ -1,0 +1,43 @@
+TODO:
+    1. Add option to start and stop animation with a button
+    2. Add a counter with modulus which shows the current number of degrees
+    3. Add option to set a specific frame to be shown
+        - Add slider to speed if possible (Optional)
+    -----------------------------------------------------------------------------------------------------
+    4. Add a matplotlib-graph to the state window
+    5. Add a point and a line (e.g. red) to illustrate the current state
+        - Use modulus (%) to limit the position of the indicator to 0-360 degrees
+    6. Expand the parallel animation to update the indicator in the graph
+    7. Add additional graphs or a selected choice of graphs.
+    -----------------------------------------------------------------------------------------------------
+    8. Add easement-curve to the parallel animation (Optional)
+    9. Finalize the design of the 'State'-window
+    10. Adapt the 'Result'-window to the newly added changes
+        - Also includes renaming the windows
+    -----------------------------------------------------------------------------------------------------
+    11. Add adiabatic analysis
+    12. Add simple analysis
+    13. Add matplotlib-graphs which show the results from these analyses to the State-window
+        - Including potential alterations to the window-design
+    14. Add the created graphs to the result-file (PDF)
+    -----------------------------------------------------------------------------------------------------
+    15. Improve the checking of the validity of the input-data
+    16. Add a ReadMe- or Info-file available from the Intro-window
+    17. Finalize the design of the application
+
+
+*********************************************************************************************************
+
+
+Notes:
+    - Changed from PySide2 to PyQt5
+    - Used "decorations" to add the animation
+    - Changed from video to 
+
+
+*********************************************************************************************************
+
+
+Possible features:
+    - Set size-parameters of animation from the given input-data
+    - Synchronize animation and data plotting
