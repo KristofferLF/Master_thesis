@@ -79,7 +79,6 @@ class Intro(QDialog):
         
         # Connect button 
         self.defaultButton.clicked.connect(self.useDefaultValues)
-        #self.defaultButton.clicked.connect(self.testWindow)
         self.customButton.clicked.connect(self.useCustomValues)
         self.inputButton.clicked.connect(self.manualInput)
 
@@ -323,9 +322,12 @@ class StateWindow(QDialog):
         self.ren.Render()
         
         self.animation = QPropertyAnimation(self, b"degree")
-        self.animation.setEndValue(720)
-        self.animation.setDuration(15000)
+        self.animation.setLoopCount(10)
+        self.animation.setEndValue(360)
+        self.animation.setDuration(10000)
         self.animation.start()
+        
+        # StartValue = self.degree, EndValue = self.degree + 360
         
         # Create widgets
         self.prompt = QLabel("Steps in a stirling engine.")
@@ -368,7 +370,7 @@ class StateWindow(QDialog):
         
         # Connect buttons
         self.playButton.clicked.connect(self.playAnimation)
-        self.playButton.clicked.connect(self.pauseAnimation)
+        self.pauseButton.clicked.connect(self.pauseAnimation)
         self.showFrameButton.clicked.connect(self.showFrame)
         self.returnButton.clicked.connect(self.returnToIntro)
         self.continueButton.clicked.connect(self.continueToResults)
@@ -385,13 +387,9 @@ class StateWindow(QDialog):
             self.valueChanged.emit(degree)
             
     def updateActors(self, degree):
-        #self.__cleanRenderer()
-        
-        # TODO Flush render
         self.leftPistonActor.SetPosition([0, self.stirlingAnimation.calculateHeight(degree)])
         self.rightPistonActor.SetPosition([0, - self.stirlingAnimation.calculateHeight(degree)])
         
-        # TODO Add preloading of the next mapper and save it for hotswap
         self.expansionVolumeActor.SetMapper(self.stirlingAnimation.generateExpansionVolumeMapper(self.stirlingAnimation.calculateHeight(degree) + 1, self.stirlingAnimation.calculateColorScale(degree)))
         self.compressionVolumeActor.SetMapper(self.stirlingAnimation.generateCompressionVolumeMapper(- self.stirlingAnimation.calculateHeight(degree) + 1, self.stirlingAnimation.calculateColorScale(-degree)))
         
@@ -408,13 +406,10 @@ class StateWindow(QDialog):
         self.widget.update()
             
     def playAnimation(self):
-        print("PRESSED!")
         self.animation.start()
-        self.ren.Render()
-        self.widget.update()
         
     def pauseAnimation(self):
-        self.animation.stop()    
+        self.animation.pause()
     
     def showFrame(self):
         if (self.degreeText.text().isdigit()):
@@ -422,11 +417,15 @@ class StateWindow(QDialog):
             self.updateActors(self.degree)
         
     def returnToIntro(self):
+        self.animation.stop()
         self.intro = Intro(self)
         self.intro.show()
         self.hide()
         
+    # self.close()?
+        
     def continueToResults(self):
+        self.animation.stop()
         self.results = ResultWindow(self)
         self.results.show()
         self.hide()

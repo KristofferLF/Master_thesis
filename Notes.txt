@@ -24,6 +24,10 @@ TODO:
     15. Improve the checking of the validity of the input-data
     16. Add a ReadMe- or Info-file available from the Intro-window
     17. Finalize the design of the application
+    18. Remove unnecessary files
+        - Including this
+    19. Code clean-up
+    20. Create an executable and check whether it works
 
 
 *********************************************************************************************************
