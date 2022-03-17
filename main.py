@@ -5,7 +5,7 @@ from PyQt5 import QtCore
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtkmodules.vtkRenderingOpenGL2
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
-from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget
+from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget, QStatusBar, QProgressBar, QSpinBox
 import sys
 from functools import partial
 from PyQt5.QtMultimediaWidgets import QVideoWidget
@@ -283,6 +283,7 @@ class StateWindow(QDialog):
         self.widget.Initialize()
         #self.widget.Start()
         self._degree = 0
+        self.needCatchup = False
         
         self.stirlingAnimation = StirlingAnimation()
         self.ren = self.stirlingAnimation.getRenderer()
@@ -342,6 +343,11 @@ class StateWindow(QDialog):
         self.continueButton = QPushButton("Continue")
         self.continueButton.setFixedSize(100, 50)
         self.continueButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.degreeStatus = QStatusBar(self)
+        #self.degreeStatus.showMessage("Ready", 5000)
+        self.spinBox = QSpinBox(self)
+        self.spinBox.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.spinBox.setFixedSize(50, 40)
         
         # Create navigation-buttons
         self.playButton = QPushButton("Play")
@@ -361,9 +367,11 @@ class StateWindow(QDialog):
         layout.addWidget(self.pauseButton, 11, 3, 1, 1)
         layout.addWidget(self.prompt, 0, 7, 1, 5)
         layout.addWidget(self.degreeText, 5, 8, 1, 1)
+        layout.addWidget(self.showFrameButton, 5, 10, 1, 1)
         layout.addWidget(self.returnButton, 11, 8, 1, 1)
         layout.addWidget(self.continueButton, 11, 10, 1, 1)
-        layout.addWidget(self.showFrameButton, 5, 10, 1, 1)
+        layout.addWidget(self.degreeStatus, 7, 8, 1, 3)
+        layout.addWidget(self.spinBox, 9, 9, 1, 1)
         
         # Set layout
         self.setLayout(layout)
@@ -384,6 +392,7 @@ class StateWindow(QDialog):
         if (degree != self._degree):
             self._degree = degree
             self.updateActors(degree)
+            self.degreeStatus.showMessage("Degree: " + str(self._degree))
             self.valueChanged.emit(degree)
             
     def updateActors(self, degree):
@@ -413,8 +422,12 @@ class StateWindow(QDialog):
     
     def showFrame(self):
         if (self.degreeText.text().isdigit()):
-            self.degree = int(self.degreeText.text())
-            self.updateActors(self.degree)
+            self._degree = int(self.degreeText.text())
+            self.updateActors(self._degree)
+            self.degreeStatus.showMessage("Degree: " + str(self._degree))
+            
+    def getDegree(self):
+        return self._degree
         
     def returnToIntro(self):
         self.animation.stop()
