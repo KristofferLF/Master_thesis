@@ -331,8 +331,6 @@ class StateWindow(QDialog):
         # StartValue = self.degree, EndValue = self.degree + 360
         
         # Create widgets
-        self.degreeText = QLineEdit()
-        self.degreeText.setFixedSize(150, 30)
         self.returnButton = QPushButton("Return")
         self.returnButton.setFixedSize(100, 50)
         self.returnButton.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -341,7 +339,7 @@ class StateWindow(QDialog):
         self.continueButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
         self.spinBox = QSpinBox(self)
-        self.spinBox.setFocusPolicy(QtCore.Qt.NoFocus)
+        #self.spinBox.setFocusPolicy(QtCore.Qt.NoFocus)
         self.spinBox.valueChanged.connect(self.showFrame)
         self.spinBox.setFixedSize(90, 30)
         self.spinBox.setRange(0, 360)
@@ -362,17 +360,12 @@ class StateWindow(QDialog):
         self.pauseButton = QPushButton("Pause")
         self.pauseButton.setFixedSize(90, 50)
         self.pauseButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.showFrameButton = QPushButton("Show")
-        self.showFrameButton.setFixedSize(100, 50)
-        self.showFrameButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
         # Create layout and add widgets
         layout = QGridLayout(window)
         layout.addWidget(self.widget, 0, 0, 10, 5)
         layout.addWidget(self.playButton, 13, 1, 1, 1)
         layout.addWidget(self.pauseButton, 13, 3, 1, 1)
-        layout.addWidget(self.degreeText, 5, 8, 1, 1)
-        layout.addWidget(self.showFrameButton, 5, 10, 1, 1)
         layout.addWidget(self.returnButton, 13, 8, 1, 1)
         layout.addWidget(self.continueButton, 13, 10, 1, 1)
         layout.addWidget(self.spinBox, 12, 0, 1, 1)
@@ -385,9 +378,10 @@ class StateWindow(QDialog):
         # Connect buttons
         self.playButton.clicked.connect(self.playAnimation)
         self.pauseButton.clicked.connect(self.pauseAnimation)
-        self.showFrameButton.clicked.connect(self.showFrame)
         self.returnButton.clicked.connect(self.returnToIntro)
         self.continueButton.clicked.connect(self.continueToResults)
+        
+        #self.releaseKeyboard()
         
     @pyqtProperty(int)
     def degree(self):
