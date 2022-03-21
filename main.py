@@ -522,36 +522,6 @@ class ResultWindow(QDialog):
     def exitApplication(self):
         sys.exit()
 
-class TestWindow(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.resize(600, 600)
-        self.child = QWidget(self)
-        self.child.setStyleSheet("background-color:red;border-radius:15px;")
-        self.child.resize(100, 100)
-        self.anim = QPropertyAnimation(self.child, b"pos")
-        self.anim.setEndValue(QPoint(400, 400))
-        self.anim.setDuration(1500)
-        self.anim.start()
-
-class TestClass(QObject):
-    
-    valueChanged = pyqtSignal(int)
-    
-    def __init__(self):
-        super().__init__()
-        self._value = 0
-    
-    @pyqtProperty(int)
-    def value(self):
-        return self._value
-    
-    @value.setter
-    def value(self, value):
-        if (value != self._value):
-            self._value = value
-            self.valueChanged.emit(value)
-
 if __name__ == '__main__':
     # Create the Qt Application
     app = QApplication(sys.argv)
