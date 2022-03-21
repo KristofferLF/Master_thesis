@@ -5,12 +5,12 @@ from PyQt5 import QtCore
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtkmodules.vtkRenderingOpenGL2
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
-from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget, QStatusBar, QProgressBar, QSpinBox
+from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget, QStatusBar, QProgressBar, QSpinBox, QSlider
 import sys
 from functools import partial
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtMultimedia import QMediaPlayer
-from PyQt5.QtCore import QUrl, QTimer, QObject, pyqtSignal, pyqtProperty, QPropertyAnimation, QPoint
+from PyQt5.QtCore import QUrl, QTimer, QObject, pyqtSignal, pyqtProperty, QPropertyAnimation, QPoint, Qt
 from PyQt5 import QtGui, QtWidgets, QtOpenGL
 from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
 from schmidt import schmidtAnalysis, plotSchmidtAnalysis
@@ -331,10 +331,6 @@ class StateWindow(QDialog):
         # StartValue = self.degree, EndValue = self.degree + 360
         
         # Create widgets
-        self.prompt = QLabel("Steps in a stirling engine.")
-        self.prompt.setAlignment(QtCore.Qt.AlignCenter)
-        self.prompt.setFixedSize(300, 100)
-        self.prompt.setObjectName("prompt")
         self.degreeText = QLineEdit()
         self.degreeText.setFixedSize(150, 30)
         self.returnButton = QPushButton("Return")
@@ -343,18 +339,28 @@ class StateWindow(QDialog):
         self.continueButton = QPushButton("Continue")
         self.continueButton.setFixedSize(100, 50)
         self.continueButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.degreeStatus = QStatusBar(self)
-        #self.degreeStatus.showMessage("Ready", 5000)
+        
         self.spinBox = QSpinBox(self)
         self.spinBox.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.spinBox.setFixedSize(50, 40)
+        self.spinBox.valueChanged.connect(self.showFrame)
+        self.spinBox.setFixedSize(90, 30)
+        self.spinBox.setRange(0, 360)
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setRange(0, 360)
+        self.progressBar.setValue(self._degree)
+        self.progressBar.setFixedSize(450, 30)
+        self.progressBar.setFormat("Degree: " + str(self._degree) + "\N{DEGREE SIGN}")
+        self.slider = QSlider(Qt.Horizontal, self)
+        self.slider.setRange(5000, 15000)
+        self.slider.setFixedSize(360, 30)
+        self.slider.setValue(10000)
         
         # Create navigation-buttons
         self.playButton = QPushButton("Play")
-        self.playButton.setFixedSize(100, 50)
+        self.playButton.setFixedSize(90, 50)
         self.playButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.pauseButton = QPushButton("Pause")
-        self.pauseButton.setFixedSize(100, 50)
+        self.pauseButton.setFixedSize(90, 50)
         self.pauseButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.showFrameButton = QPushButton("Show")
         self.showFrameButton.setFixedSize(100, 50)
@@ -363,15 +369,15 @@ class StateWindow(QDialog):
         # Create layout and add widgets
         layout = QGridLayout(window)
         layout.addWidget(self.widget, 0, 0, 10, 5)
-        layout.addWidget(self.playButton, 11, 1, 1, 1)
-        layout.addWidget(self.pauseButton, 11, 3, 1, 1)
-        layout.addWidget(self.prompt, 0, 7, 1, 5)
+        layout.addWidget(self.playButton, 13, 1, 1, 1)
+        layout.addWidget(self.pauseButton, 13, 3, 1, 1)
         layout.addWidget(self.degreeText, 5, 8, 1, 1)
         layout.addWidget(self.showFrameButton, 5, 10, 1, 1)
-        layout.addWidget(self.returnButton, 11, 8, 1, 1)
-        layout.addWidget(self.continueButton, 11, 10, 1, 1)
-        layout.addWidget(self.degreeStatus, 7, 8, 1, 3)
-        layout.addWidget(self.spinBox, 9, 9, 1, 1)
+        layout.addWidget(self.returnButton, 13, 8, 1, 1)
+        layout.addWidget(self.continueButton, 13, 10, 1, 1)
+        layout.addWidget(self.spinBox, 12, 0, 1, 1)
+        layout.addWidget(self.progressBar, 11, 0, 1, 5)
+        layout.addWidget(self.slider, 12, 1, 1, 3)
         
         # Set layout
         self.setLayout(layout)
@@ -391,9 +397,15 @@ class StateWindow(QDialog):
     def degree(self, degree):
         if (degree != self._degree):
             self._degree = degree
-            self.updateActors(degree)
-            self.degreeStatus.showMessage("Degree: " + str(self._degree))
+            self.updateValues(self._degree)
             self.valueChanged.emit(degree)
+            
+    def updateValues(self, degree):
+        self.updateActors(degree)
+        self.spinBox.setValue(degree)
+        self.progressBar.setValue(degree)
+        self.animation.setDuration(self.slider.value())
+        self.progressBar.setFormat("Degree: " + str(self._degree) + "\N{DEGREE SIGN}")
             
     def updateActors(self, degree):
         self.leftPistonActor.SetPosition([0, self.stirlingAnimation.calculateHeight(degree)])
@@ -408,8 +420,6 @@ class StateWindow(QDialog):
         self.expansionPistonRodActor.SetMapper(self.stirlingAnimation.generateExpansionPistonRodMapper(degree))
         self.compressionPistonRodActor.SetMapper(self.stirlingAnimation.generateCompressionPistonRodMapper(degree))
         
-        print("Degree: " + str(degree))
-        
         self.ren.Render()
         
         self.widget.update()
@@ -421,10 +431,8 @@ class StateWindow(QDialog):
         self.animation.pause()
     
     def showFrame(self):
-        if (self.degreeText.text().isdigit()):
-            self._degree = int(self.degreeText.text())
-            self.updateActors(self._degree)
-            self.degreeStatus.showMessage("Degree: " + str(self._degree))
+        self._degree = self.spinBox.value()
+        self.updateValues(self._degree)
             
     def getDegree(self):
         return self._degree
@@ -442,6 +450,11 @@ class StateWindow(QDialog):
         self.results = ResultWindow(self)
         self.results.show()
         self.hide()
+        
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        super().closeEvent(a0)
+        self.widget.closeEvent()
+        self.widget.Finalize()
         
 class ResultWindow(QDialog):
     def __init__(self, parent=None):

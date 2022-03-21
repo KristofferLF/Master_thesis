@@ -14,3 +14,13 @@ QLabel#prompt {
 
 QLabel#orLabel {
 }
+
+QProgressBar {
+    padding: 2px;
+    text-align: center;
+    /*border-top: 3px solid lightgray;*/
+}
+
+QProgressBar::chunk {
+    background-color: lightblue;
+}
