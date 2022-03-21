@@ -4,7 +4,7 @@ TODO:
         - Note: Did not require modulus due to instead looping 0-360 degrees
             - Simplifies calculations in future modifications and expansions
     3. Add option to set a specific frame to be shown                                               *DONE*
-        - Add slider to speed if possible (Optional)
+        - Add slider to speed if possible (Optional)                                                *DONE*
             - Possibly buttons
             - Use 'setDuration'
                 - Suggestion: 5000, 10000, and 15000
