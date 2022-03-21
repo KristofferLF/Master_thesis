@@ -1,20 +1,12 @@
-import signal
-import time
-import PyQt5
 from PyQt5 import QtCore
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-import vtkmodules.vtkRenderingOpenGL2
-from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
-from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget, QStatusBar, QProgressBar, QSpinBox, QSlider
+from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget, QProgressBar, QSpinBox, QSlider
 import sys
-from functools import partial
-from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtMultimedia import QMediaPlayer
-from PyQt5.QtCore import QUrl, QTimer, QObject, pyqtSignal, pyqtProperty, QPropertyAnimation, QPoint, Qt
-from PyQt5 import QtGui, QtWidgets, QtOpenGL
+from PyQt5.QtCore import pyqtSignal, pyqtProperty, QPropertyAnimation, Qt
+from PyQt5 import QtGui, QtOpenGL
 from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
 from schmidt import schmidtAnalysis, plotSchmidtAnalysis
-from animation import StirlingAnimation, ActorTroup
+from animation import StirlingAnimation
 import sys
 
 def checkValues(values):
