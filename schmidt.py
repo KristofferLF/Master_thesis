@@ -175,3 +175,24 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
     pdfPages.savefig()
 
     pdfPages.close()
+    
+def getVolumeVariation(cycleAnalysis):
+    fig = plt.figure()
+    fig.clf()
+
+    # Plot volume variation
+    fig.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color='lightskyblue', label="Expansion volume", zorder=2)
+    fig.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2], color='indianred', label="Compression volume", zorder=3)
+    
+    fig.xticks(np.arange(0, 390, 30))
+    fig.xlabel("Degrees")
+    fig.yticks(np.arange(0, 32500000, 2500000))
+    fig.ylabel("Volume [mm3]")
+    fig.title("Volume variation")
+    fig.margins(x=0)
+    fig.ylim(0, 30000000)
+    fig.grid()
+    fig.legend()
+    
+        
+    return fig

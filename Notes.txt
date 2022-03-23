@@ -38,7 +38,7 @@ TODO:
     17. Finalize the design of the application
     18. Remove unnecessary files
         - Including this
-    19. Code clean-up
+    19. Code clean-up and documentation for each method and variable
     20. Create an executable and check whether it works
 
 
@@ -48,7 +48,7 @@ TODO:
 Notes:
     - Changed from PySide2 to PyQt5
     - Used "decorations" to add the animation
-    - Changed from video to 
+    - Changed from video to VTK-animation
 
 
 *********************************************************************************************************

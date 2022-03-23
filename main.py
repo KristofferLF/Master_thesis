@@ -1,3 +1,4 @@
+import random
 from PyQt5 import QtCore
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget, QProgressBar, QSpinBox, QSlider
@@ -5,8 +6,13 @@ import sys
 from PyQt5.QtCore import pyqtSignal, pyqtProperty, QPropertyAnimation, Qt
 from PyQt5 import QtGui, QtOpenGL
 from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
-from schmidt import schmidtAnalysis, plotSchmidtAnalysis
+from schmidt import schmidtAnalysis, plotSchmidtAnalysis, getVolumeVariation
 from animation import StirlingAnimation
+import matplotlib.pyplot as plt
+#plt.use('Qt5Agg')
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import numpy as np
 import sys
 
 def checkValues(values):
@@ -75,13 +81,6 @@ class Intro(QDialog):
         self.inputButton.clicked.connect(self.manualInput)
 
     # Method for navigation
-
-    def testWindow(self):
-        self.testWindow = TestWindow()
-        self.testWindow.show()
-        
-        if self.isVisible():
-            self.hide()
 
     def manualInput(self):
         self.manualInput = ManualInput(self)
@@ -315,7 +314,7 @@ class StateWindow(QDialog):
         self.ren.Render()
         
         self.animation = QPropertyAnimation(self, b"degree")
-        self.animation.setLoopCount(10)
+        self.animation.setLoopCount(100)
         self.animation.setEndValue(360)
         self.animation.setDuration(10000)
         self.animation.start()
@@ -353,6 +352,28 @@ class StateWindow(QDialog):
         self.pauseButton.setFixedSize(90, 50)
         self.pauseButton.setFocusPolicy(QtCore.Qt.NoFocus)
         
+        calculationValues = readFromJSON("assets/inputValues.json")
+        print("These values were read from the JSON-file containing input-values:")
+        print(calculationValues)
+        cycleAnalysis = schmidtAnalysis(calculationValues)
+
+        # Plot results
+        self.figure = Figure()
+        ax1 = self.figure.add_subplot(221)
+        data1 = [random.random() for i in range(10)]
+        ax1.plot(data1, '*-')
+        ax2 = self.figure.add_subplot(222)
+        data2 = [random.random() for i in range(10)]
+        ax2.plot(data2, '*-')
+        ax3 = self.figure.add_subplot(223)
+        data3 = [random.random() for i in range(10)]
+        ax3.plot(data3, '*-')
+        ax4 = self.figure.add_subplot(224)
+        data4 = [random.random() for i in range(10)]
+        ax4.plot(data4, '*-')
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas.setFixedSize(1000, 900)
+        
         # Create layout and add widgets
         layout = QGridLayout(window)
         layout.addWidget(self.widget, 0, 0, 10, 5)
@@ -363,6 +384,7 @@ class StateWindow(QDialog):
         layout.addWidget(self.spinBox, 12, 0, 1, 1)
         layout.addWidget(self.progressBar, 11, 0, 1, 5)
         layout.addWidget(self.slider, 12, 1, 1, 3)
+        layout.addWidget(self.canvas, 0, 5, 13, 10)
         
         # Set layout
         self.setLayout(layout)
@@ -387,13 +409,31 @@ class StateWindow(QDialog):
             self.valueChanged.emit(degree)
             
     def updateValues(self, degree):
+        """Updates the position for each vertex in the VTK-animation.
+
+        Args:
+            degree (int): The degree used to calculate the position.
+        """
         self.updateActors(degree)
         self.spinBox.setValue(degree)
         self.progressBar.setValue(degree)
         self.animation.setDuration(self.slider.value())
         self.progressBar.setFormat("Degree: " + str(self._degree) + "\N{DEGREE SIGN}")
+        
+    def updateFigures(self, degree):
+        """Updates the degree-marker for each plot.
+
+        Args:
+            degree (int): The degree used to calculate the position.
+        """
+        print(str(degree))
             
     def updateActors(self, degree):
+        """Updates the position for each vertex in the VTK-animation.
+
+        Args:
+            degree (int): The degree used to calculate the position.
+        """
         self.leftPistonActor.SetPosition([0, self.stirlingAnimation.calculateHeight(degree)])
         self.rightPistonActor.SetPosition([0, - self.stirlingAnimation.calculateHeight(degree)])
         
