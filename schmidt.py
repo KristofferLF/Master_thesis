@@ -1,4 +1,5 @@
 import os
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -176,23 +177,72 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
 
     pdfPages.close()
     
-def getVolumeVariation(cycleAnalysis):
-    fig = plt.figure()
-    fig.clf()
+def plotVolumeVariation(window, cycleAnalysis, subplotPosition):
+    ax = window.figure.add_subplot(subplotPosition)
+    
+    ax.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color='lightskyblue', label="Expansion volume", zorder=2)
+    ax.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2], color='indianred', label="Compression volume", zorder=3)
+    
+    ax.set_xlabel("Degrees")
+    ax.set_ylabel("Volume [mm3]")
+    ax.set_title("Volume variation")
+    ax.set_xticks(np.arange(0, 390, 30))
+    ax.set_yticks(np.arange(0, 32500000, 2500000))
+    ax.set_ylim(0, 30000000)
+    ax.margins(x=0)
+    ax.legend()
+    ax.grid()
+    
+def plotCircuitPressure(window, cycleAnalysis, subplotPosition):
+    ax = window.figure.add_subplot(subplotPosition)
+    
+    ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,6], color='b', label="P_1")
+    ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,7], color='r', label="P_2")
+    ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,14], color='g', label="P_3")
+    ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,15], color='y', label="P_4")
 
-    # Plot volume variation
-    fig.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color='lightskyblue', label="Expansion volume", zorder=2)
-    fig.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2], color='indianred', label="Compression volume", zorder=3)
+    ax.set_xlabel("Degrees")
+    ax.set_ylabel("Pressure [N/mm2]")
+    ax.set_title("Pressure variation")
+    ax.set_xticks(np.arange(0, 390, 30))
+    ax.set_yticks(np.arange(0, 22, 2))
+    ax.set_ylim(0, 20)
+    ax.margins(x=0)
+    ax.legend()
+    ax.grid()
     
-    fig.xticks(np.arange(0, 390, 30))
-    fig.xlabel("Degrees")
-    fig.yticks(np.arange(0, 32500000, 2500000))
-    fig.ylabel("Volume [mm3]")
-    fig.title("Volume variation")
-    fig.margins(x=0)
-    fig.ylim(0, 30000000)
-    fig.grid()
-    fig.legend()
+def plotMechanicalWork(window, cycleAnalysis, subplotPosition):
+    ax = window.figure.add_subplot(subplotPosition)
     
-        
-    return fig
+    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,8] / 1000, color='b', label="W_1")
+    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,9] / 1000, color='r', label="W_2")
+    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,10] / 1000, color='g', label="W_R")
+
+    ax.set_xlabel("Degrees")
+    ax.set_ylabel("Work [kNm]")
+    ax.set_title("Work variation")
+    ax.set_xticks(np.arange(0, 390, 30))
+    ax.set_yticks(np.arange(-25, 25, 2.5))
+    ax.set_xlim(0, 360)
+    ax.set_ylim(-20, 20)
+    ax.margins(x=0)
+    ax.legend()
+    ax.grid()
+    
+def plotPistonForces(window, cycleAnalysis, subplotPosition):
+    ax = window.figure.add_subplot(subplotPosition)
+    
+    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,11] / 1000, color='b', label="F_O")
+    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,12] / 1000, color='r', label="F_U")
+    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,13] / 1000, color='g', label="F_R")
+
+    ax.set_xlabel("Degrees")
+    ax.set_ylabel("Force [kN]")
+    ax.set_title("Force variation")
+    ax.set_xticks(np.arange(0, 390, 30))
+    ax.set_yticks(np.arange(-500, 1750, 250))
+    ax.set_xlim(0, 360)
+    ax.set_ylim(-500, 1500)
+    ax.margins(x=0)
+    ax.legend()
+    ax.grid()

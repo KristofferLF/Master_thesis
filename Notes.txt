@@ -9,11 +9,11 @@ TODO:
             - Use 'setDuration'
                 - Suggestion: 5000, 10000, and 15000
     ------------------------------------------------------------------------------------------------------
-    4. Add a matplotlib-graph to the state window
-    5. Add a point and a line (e.g. red) to illustrate the current state
+    4. Add a matplotlib-graph to the state window                                                   *DONE*
+    5. Add additional graphs or a selected choice of graphs.
+    6. Add a point and a line (e.g. red) to illustrate the current state
         - Use modulus (%) to limit the position of the indicator to 0-360 degrees
-    6. Expand the parallel animation to update the indicator in the graph
-    7. Add additional graphs or a selected choice of graphs.
+    7. Expand the parallel animation to update the indicator in the graph
     ------------------------------------------------------------------------------------------------------
     8. Add easement-curve to the parallel animation (Optional)
     9. Finalize the design of the 'State'-window

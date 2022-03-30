@@ -6,7 +6,7 @@ import sys
 from PyQt5.QtCore import pyqtSignal, pyqtProperty, QPropertyAnimation, Qt
 from PyQt5 import QtGui, QtOpenGL
 from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
-from schmidt import schmidtAnalysis, plotSchmidtAnalysis, getVolumeVariation
+from schmidt import *
 from animation import StirlingAnimation
 import matplotlib.pyplot as plt
 #plt.use('Qt5Agg')
@@ -351,28 +351,9 @@ class StateWindow(QDialog):
         self.pauseButton = QPushButton("Pause")
         self.pauseButton.setFixedSize(90, 50)
         self.pauseButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        
-        calculationValues = readFromJSON("assets/inputValues.json")
-        print("These values were read from the JSON-file containing input-values:")
-        print(calculationValues)
-        cycleAnalysis = schmidtAnalysis(calculationValues)
 
-        # Plot results
-        self.figure = Figure()
-        ax1 = self.figure.add_subplot(221)
-        data1 = [random.random() for i in range(10)]
-        ax1.plot(data1, '*-')
-        ax2 = self.figure.add_subplot(222)
-        data2 = [random.random() for i in range(10)]
-        ax2.plot(data2, '*-')
-        ax3 = self.figure.add_subplot(223)
-        data3 = [random.random() for i in range(10)]
-        ax3.plot(data3, '*-')
-        ax4 = self.figure.add_subplot(224)
-        data4 = [random.random() for i in range(10)]
-        ax4.plot(data4, '*-')
-        self.canvas = FigureCanvas(self.figure)
-        self.canvas.setFixedSize(1000, 900)
+        # Create plots
+        self.createPlots()
         
         # Create layout and add widgets
         layout = QGridLayout(window)
@@ -397,6 +378,25 @@ class StateWindow(QDialog):
         
         #self.releaseKeyboard()
         
+    def createPlots(self):
+        
+        calculationValues = readFromJSON("assets/inputValues.json")
+        print("These values were read from the JSON-file containing input-values:")
+        print(calculationValues)
+        self.cycleAnalysis = schmidtAnalysis(calculationValues)
+        
+        self.figure = Figure()
+        self.figure.clear()
+        
+        plotVolumeVariation(self, self.cycleAnalysis, 221)
+        plotCircuitPressure(self, self.cycleAnalysis, 222)
+        plotMechanicalWork(self, self.cycleAnalysis, 223)
+        plotPistonForces(self, self.cycleAnalysis, 224)
+        
+        self.figure.subplots_adjust(bottom=0.06, left=0.08, right=0.98, top=0.97)
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas.setFixedSize(1000, 880)
+        
     @pyqtProperty(int)
     def degree(self):
         return self._degree
@@ -407,7 +407,7 @@ class StateWindow(QDialog):
             self._degree = degree
             self.updateValues(self._degree)
             self.valueChanged.emit(degree)
-            
+                        
     def updateValues(self, degree):
         """Updates the position for each vertex in the VTK-animation.
 
@@ -420,14 +420,6 @@ class StateWindow(QDialog):
         self.animation.setDuration(self.slider.value())
         self.progressBar.setFormat("Degree: " + str(self._degree) + "\N{DEGREE SIGN}")
         
-    def updateFigures(self, degree):
-        """Updates the degree-marker for each plot.
-
-        Args:
-            degree (int): The degree used to calculate the position.
-        """
-        print(str(degree))
-            
     def updateActors(self, degree):
         """Updates the position for each vertex in the VTK-animation.
 
@@ -450,6 +442,14 @@ class StateWindow(QDialog):
         
         self.widget.update()
             
+    def updateMarker(self, degree):
+        """Updates the degree-marker for each plot.
+
+        Args:
+            degree (int): The degree used to calculate the position.
+        """
+        print(str(degree))
+        
     def playAnimation(self):
         self.animation.start()
         
@@ -480,6 +480,7 @@ class StateWindow(QDialog):
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         super().closeEvent(a0)
         self.widget.closeEvent()
+        self.canvas.closeEvent()
         self.widget.Finalize()
         
 class ResultWindow(QDialog):
