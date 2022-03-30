@@ -177,11 +177,12 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
 
     pdfPages.close()
     
-def plotVolumeVariation(window, cycleAnalysis, subplotPosition):
-    ax = window.figure.add_subplot(subplotPosition)
+def plotVolumeVariation(window, cycleAnalysis, subplotPosition, degree):
+    ax = window.analysisPlots.add_subplot(subplotPosition)
     
     ax.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color='lightskyblue', label="Expansion volume", zorder=2)
     ax.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2], color='indianred', label="Compression volume", zorder=3)
+    #ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color="k", zorder="15")
     
     ax.set_xlabel("Degrees")
     ax.set_ylabel("Volume [mm3]")
@@ -193,8 +194,10 @@ def plotVolumeVariation(window, cycleAnalysis, subplotPosition):
     ax.legend()
     ax.grid()
     
-def plotCircuitPressure(window, cycleAnalysis, subplotPosition):
-    ax = window.figure.add_subplot(subplotPosition)
+    ax.axvline(degree, color='k', linewidth=2, zorder=10)
+    
+def plotCircuitPressure(window, cycleAnalysis, subplotPosition, degree):
+    ax = window.analysisPlots.add_subplot(subplotPosition)
     
     ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,6], color='b', label="P_1")
     ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,7], color='r', label="P_2")
@@ -211,8 +214,10 @@ def plotCircuitPressure(window, cycleAnalysis, subplotPosition):
     ax.legend()
     ax.grid()
     
-def plotMechanicalWork(window, cycleAnalysis, subplotPosition):
-    ax = window.figure.add_subplot(subplotPosition)
+    ax.axvline(degree, color='k', linewidth=2, zorder=10)
+    
+def plotMechanicalWork(window, cycleAnalysis, subplotPosition, degree):
+    ax = window.analysisPlots.add_subplot(subplotPosition)
     
     ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,8] / 1000, color='b', label="W_1")
     ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,9] / 1000, color='r', label="W_2")
@@ -229,8 +234,10 @@ def plotMechanicalWork(window, cycleAnalysis, subplotPosition):
     ax.legend()
     ax.grid()
     
-def plotPistonForces(window, cycleAnalysis, subplotPosition):
-    ax = window.figure.add_subplot(subplotPosition)
+    ax.axvline(degree, color='k', linewidth=2, zorder=10)
+    
+def plotPistonForces(window, cycleAnalysis, subplotPosition, degree):
+    ax = window.analysisPlots.add_subplot(subplotPosition)
     
     ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,11] / 1000, color='b', label="F_O")
     ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,12] / 1000, color='r', label="F_U")
@@ -246,3 +253,5 @@ def plotPistonForces(window, cycleAnalysis, subplotPosition):
     ax.margins(x=0)
     ax.legend()
     ax.grid()
+    
+    ax.axvline(degree, color='k', linewidth=2, zorder=10)

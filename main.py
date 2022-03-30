@@ -379,23 +379,25 @@ class StateWindow(QDialog):
         #self.releaseKeyboard()
         
     def createPlots(self):
-        
         calculationValues = readFromJSON("assets/inputValues.json")
         print("These values were read from the JSON-file containing input-values:")
         print(calculationValues)
         self.cycleAnalysis = schmidtAnalysis(calculationValues)
         
-        self.figure = Figure()
-        self.figure.clear()
+        self.analysisPlots = Figure()
+        self.analysisPlots.clear()
         
-        plotVolumeVariation(self, self.cycleAnalysis, 221)
-        plotCircuitPressure(self, self.cycleAnalysis, 222)
-        plotMechanicalWork(self, self.cycleAnalysis, 223)
-        plotPistonForces(self, self.cycleAnalysis, 224)
+        plotVolumeVariation(self, self.cycleAnalysis, 221, 0)
+        plotCircuitPressure(self, self.cycleAnalysis, 222, 0)
+        plotMechanicalWork(self, self.cycleAnalysis, 223, 0)
+        plotPistonForces(self, self.cycleAnalysis, 224, 0)
         
-        self.figure.subplots_adjust(bottom=0.06, left=0.08, right=0.98, top=0.97)
-        self.canvas = FigureCanvas(self.figure)
+        self.analysisPlots.subplots_adjust(bottom=0.06, left=0.08, right=0.98, top=0.97)
+        self.canvas = FigureCanvas(self.analysisPlots)
         self.canvas.setFixedSize(1000, 880)
+        
+    def createPlotMarker(self):
+        self.plotMarker
         
     @pyqtProperty(int)
     def degree(self):
@@ -414,6 +416,7 @@ class StateWindow(QDialog):
         Args:
             degree (int): The degree used to calculate the position.
         """
+        #self.updatePlots(degree)
         self.updateActors(degree)
         self.spinBox.setValue(degree)
         self.progressBar.setValue(degree)
@@ -442,13 +445,21 @@ class StateWindow(QDialog):
         
         self.widget.update()
             
-    def updateMarker(self, degree):
+    def updatePlots(self, degree):
         """Updates the degree-marker for each plot.
 
         Args:
             degree (int): The degree used to calculate the position.
         """
-        print(str(degree))
+        
+        self.analysisPlots.clear()
+        
+        plotVolumeVariation(self, self.cycleAnalysis, 221, degree)
+        plotCircuitPressure(self, self.cycleAnalysis, 222, degree)
+        plotMechanicalWork(self, self.cycleAnalysis, 223, degree)
+        plotPistonForces(self, self.cycleAnalysis, 224, degree)
+        
+        self.analysisPlots.subplots_adjust(bottom=0.06, left=0.08, right=0.98, top=0.97)
         
     def playAnimation(self):
         self.animation.start()
