@@ -1,5 +1,6 @@
 import random
 from PyQt5 import QtCore
+from matplotlib import animation
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget, QProgressBar, QSpinBox, QSlider
 import sys
@@ -387,12 +388,15 @@ class StateWindow(QDialog):
         self.analysisPlots = Figure()
         self.analysisPlots.clear()
         
-        plotVolumeVariation(self, self.cycleAnalysis, 221, 0)
-        plotCircuitPressure(self, self.cycleAnalysis, 222, 0)
-        plotMechanicalWork(self, self.cycleAnalysis, 223, 0)
-        plotPistonForces(self, self.cycleAnalysis, 224, 0)
+        self.plotMarkers = []
+        
+        plotVolumeVariation(self, self.cycleAnalysis, 221)
+        plotCircuitPressure(self, self.cycleAnalysis, 222)
+        plotMechanicalWork(self, self.cycleAnalysis, 223)
+        plotPistonForces(self, self.cycleAnalysis, 224)
         
         self.analysisPlots.subplots_adjust(bottom=0.06, left=0.08, right=0.98, top=0.97)
+        
         self.canvas = FigureCanvas(self.analysisPlots)
         self.canvas.setFixedSize(1000, 880)
         
@@ -416,7 +420,8 @@ class StateWindow(QDialog):
         Args:
             degree (int): The degree used to calculate the position.
         """
-        #self.updatePlots(degree)
+        
+        self.updatePlots(degree)
         self.updateActors(degree)
         self.spinBox.setValue(degree)
         self.progressBar.setValue(degree)
@@ -429,6 +434,7 @@ class StateWindow(QDialog):
         Args:
             degree (int): The degree used to calculate the position.
         """
+        
         self.leftPistonActor.SetPosition([0, self.stirlingAnimation.calculateHeight(degree)])
         self.rightPistonActor.SetPosition([0, - self.stirlingAnimation.calculateHeight(degree)])
         
@@ -452,14 +458,10 @@ class StateWindow(QDialog):
             degree (int): The degree used to calculate the position.
         """
         
-        self.analysisPlots.clear()
+        for marker in self.plotMarkers:
+            marker.set_xdata(degree)
         
-        plotVolumeVariation(self, self.cycleAnalysis, 221, degree)
-        plotCircuitPressure(self, self.cycleAnalysis, 222, degree)
-        plotMechanicalWork(self, self.cycleAnalysis, 223, degree)
-        plotPistonForces(self, self.cycleAnalysis, 224, degree)
-        
-        self.analysisPlots.subplots_adjust(bottom=0.06, left=0.08, right=0.98, top=0.97)
+        self.canvas.draw_idle()
         
     def playAnimation(self):
         self.animation.start()
@@ -479,8 +481,6 @@ class StateWindow(QDialog):
         self.intro = Intro(self)
         self.intro.show()
         self.hide()
-        
-    # self.close()?
         
     def continueToResults(self):
         self.animation.stop()

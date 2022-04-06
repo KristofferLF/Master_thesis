@@ -1,5 +1,6 @@
 import os
 import random
+from matplotlib.lines import Line2D
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -177,7 +178,7 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
 
     pdfPages.close()
     
-def plotVolumeVariation(window, cycleAnalysis, subplotPosition, degree):
+def plotVolumeVariation(window, cycleAnalysis, subplotPosition):
     ax = window.analysisPlots.add_subplot(subplotPosition)
     
     ax.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color='lightskyblue', label="Expansion volume", zorder=2)
@@ -191,12 +192,13 @@ def plotVolumeVariation(window, cycleAnalysis, subplotPosition, degree):
     ax.set_yticks(np.arange(0, 32500000, 2500000))
     ax.set_ylim(0, 30000000)
     ax.margins(x=0)
-    ax.legend()
     ax.grid()
+    ax.legend(loc=1)
     
-    ax.axvline(degree, color='k', linewidth=2, zorder=10)
+    volumeVariationMarker = ax.axvline(0, color='k', linewidth=2, zorder=5)
+    window.plotMarkers.append(volumeVariationMarker)
     
-def plotCircuitPressure(window, cycleAnalysis, subplotPosition, degree):
+def plotCircuitPressure(window, cycleAnalysis, subplotPosition):
     ax = window.analysisPlots.add_subplot(subplotPosition)
     
     ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,6], color='b', label="P_1")
@@ -211,12 +213,13 @@ def plotCircuitPressure(window, cycleAnalysis, subplotPosition, degree):
     ax.set_yticks(np.arange(0, 22, 2))
     ax.set_ylim(0, 20)
     ax.margins(x=0)
-    ax.legend()
+    ax.legend(loc=3)
     ax.grid()
     
-    ax.axvline(degree, color='k', linewidth=2, zorder=10)
+    circuitPressureMarker = ax.axvline(0, color='k', linewidth=2, zorder=5)
+    window.plotMarkers.append(circuitPressureMarker)
     
-def plotMechanicalWork(window, cycleAnalysis, subplotPosition, degree):
+def plotMechanicalWork(window, cycleAnalysis, subplotPosition):
     ax = window.analysisPlots.add_subplot(subplotPosition)
     
     ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,8] / 1000, color='b', label="W_1")
@@ -231,12 +234,13 @@ def plotMechanicalWork(window, cycleAnalysis, subplotPosition, degree):
     ax.set_xlim(0, 360)
     ax.set_ylim(-20, 20)
     ax.margins(x=0)
-    ax.legend()
+    ax.legend(loc=1)
     ax.grid()
     
-    ax.axvline(degree, color='k', linewidth=2, zorder=10)
+    mechanicalWorkMarker = ax.axvline(0, color='k', linewidth=2, zorder=5)
+    window.plotMarkers.append(mechanicalWorkMarker)
     
-def plotPistonForces(window, cycleAnalysis, subplotPosition, degree):
+def plotPistonForces(window, cycleAnalysis, subplotPosition):
     ax = window.analysisPlots.add_subplot(subplotPosition)
     
     ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,11] / 1000, color='b', label="F_O")
@@ -251,7 +255,8 @@ def plotPistonForces(window, cycleAnalysis, subplotPosition, degree):
     ax.set_xlim(0, 360)
     ax.set_ylim(-500, 1500)
     ax.margins(x=0)
-    ax.legend()
+    ax.legend(loc=7)
     ax.grid()
     
-    ax.axvline(degree, color='k', linewidth=2, zorder=10)
+    pistonForcesMarker = ax.axvline(0, color='k', linewidth=2, zorder=5)
+    window.plotMarkers.append(pistonForcesMarker)

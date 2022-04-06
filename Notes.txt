@@ -10,7 +10,7 @@ TODO:
                 - Suggestion: 5000, 10000, and 15000
     ------------------------------------------------------------------------------------------------------
     4. Add a matplotlib-graph to the state window                                                   *DONE*
-    5. Add additional graphs or a selected choice of graphs.
+    5. Add additional graphs or a selected choice of graphs.                                        *DONE*
     6. Add a point and a line (e.g. red) to illustrate the current state
         - Use modulus (%) to limit the position of the indicator to 0-360 degrees
     7. Expand the parallel animation to update the indicator in the graph
@@ -49,6 +49,7 @@ Notes:
     - Changed from PySide2 to PyQt5
     - Used "decorations" to add the animation
     - Changed from video to VTK-animation
+    - Development of animation proved difficult due to visualization of change and performance issues
 
 
 *********************************************************************************************************
