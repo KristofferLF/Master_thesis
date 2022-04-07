@@ -10,9 +10,10 @@ from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
 from schmidt import *
 from animation import StirlingAnimation
 import matplotlib.pyplot as plt
+import pyqtgraph as pg
 #plt.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+#from matplotlib.figure import Figure
 import numpy as np
 import sys
 
@@ -385,20 +386,14 @@ class StateWindow(QDialog):
         print(calculationValues)
         self.cycleAnalysis = schmidtAnalysis(calculationValues)
         
-        self.analysisPlots = Figure()
+        self.analysisPlots = pg.plot()
         self.analysisPlots.clear()
         
         self.plotMarkers = []
         
-        plotVolumeVariation(self, self.cycleAnalysis, 221)
-        plotCircuitPressure(self, self.cycleAnalysis, 222)
-        plotMechanicalWork(self, self.cycleAnalysis, 223)
-        plotPistonForces(self, self.cycleAnalysis, 224)
+        createSchmidtPlots(self, self.cycleAnalysis)
         
-        self.analysisPlots.subplots_adjust(bottom=0.06, left=0.08, right=0.98, top=0.97)
-        
-        self.canvas = FigureCanvas(self.analysisPlots)
-        self.canvas.setFixedSize(1000, 880)
+        #self.analysisPlots.subplots_adjust(bottom=0.06, left=0.08, right=0.98, top=0.97)
         
     def createPlotMarker(self):
         self.plotMarker
@@ -459,9 +454,7 @@ class StateWindow(QDialog):
         """
         
         for marker in self.plotMarkers:
-            marker.set_xdata(degree)
-        
-        self.canvas.draw_idle()
+            marker.setValue(degree)
         
     def playAnimation(self):
         self.animation.start()

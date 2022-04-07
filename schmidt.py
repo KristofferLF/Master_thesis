@@ -3,6 +3,7 @@ import random
 from matplotlib.lines import Line2D
 import numpy as np
 import matplotlib.pyplot as plt
+import pyqtgraph as pg
 from matplotlib.backends.backend_pdf import PdfPages
 
 def schmidtAnalysis(values):
@@ -178,85 +179,37 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
 
     pdfPages.close()
     
-def plotVolumeVariation(window, cycleAnalysis, subplotPosition):
-    ax = window.analysisPlots.add_subplot(subplotPosition)
+def createSchmidtPlots(window, cycleAnalysis):
+    window.canvas = pg.GraphicsLayoutWidget()
+    window.canvas.resize(1000, 880)
     
-    ax.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color='lightskyblue', label="Expansion volume", zorder=2)
-    ax.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2], color='indianred', label="Compression volume", zorder=3)
-    #ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color="k", zorder="15")
+    #volumeVariationViewBox = window.canvas.addItem()
+    volumeVariation = window.canvas.addPlot(name="VolumeVariation", title="VolumeVariation")
+    volumeVariation.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2])
+    volumeVariation.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2] + cycleAnalysis[:,3])
     
-    ax.set_xlabel("Degrees")
-    ax.set_ylabel("Volume [mm3]")
-    ax.set_title("Volume variation")
-    ax.set_xticks(np.arange(0, 390, 30))
-    ax.set_yticks(np.arange(0, 32500000, 2500000))
-    ax.set_ylim(0, 30000000)
-    ax.margins(x=0)
-    ax.grid()
-    ax.legend(loc=1)
-    
-    volumeVariationMarker = ax.axvline(0, color='k', linewidth=2, zorder=5)
+    volumeVariationMarker = pg.InfiniteLine()
+    volumeVariation.addItem(volumeVariationMarker)
     window.plotMarkers.append(volumeVariationMarker)
     
-def plotCircuitPressure(window, cycleAnalysis, subplotPosition):
-    ax = window.analysisPlots.add_subplot(subplotPosition)
+    circuitPressure = window.canvas.addPlot(name="CircuitPressure", title="CircuitPressure")
+    circuitPressure.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,6])
+    circuitPressure.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,7])
+    circuitPressure.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,14])
+    circuitPressure.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,15])
     
-    ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,6], color='b', label="P_1")
-    ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,7], color='r', label="P_2")
-    ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,14], color='g', label="P_3")
-    ax.plot(cycleAnalysis[:,0], cycleAnalysis[:,15], color='y', label="P_4")
-
-    ax.set_xlabel("Degrees")
-    ax.set_ylabel("Pressure [N/mm2]")
-    ax.set_title("Pressure variation")
-    ax.set_xticks(np.arange(0, 390, 30))
-    ax.set_yticks(np.arange(0, 22, 2))
-    ax.set_ylim(0, 20)
-    ax.margins(x=0)
-    ax.legend(loc=3)
-    ax.grid()
-    
-    circuitPressureMarker = ax.axvline(0, color='k', linewidth=2, zorder=5)
+    circuitPressureMarker = pg.InfiniteLine()
+    circuitPressure.addItem(circuitPressureMarker)
     window.plotMarkers.append(circuitPressureMarker)
     
-def plotMechanicalWork(window, cycleAnalysis, subplotPosition):
-    ax = window.analysisPlots.add_subplot(subplotPosition)
+    mechanicalWork = window.canvas.addPlot(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,8] / 1000, name="MechanicalWork", title="MechanicalWork", row=2, col=0)
     
-    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,8] / 1000, color='b', label="W_1")
-    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,9] / 1000, color='r', label="W_2")
-    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,10] / 1000, color='g', label="W_R")
-
-    ax.set_xlabel("Degrees")
-    ax.set_ylabel("Work [kNm]")
-    ax.set_title("Work variation")
-    ax.set_xticks(np.arange(0, 390, 30))
-    ax.set_yticks(np.arange(-25, 25, 2.5))
-    ax.set_xlim(0, 360)
-    ax.set_ylim(-20, 20)
-    ax.margins(x=0)
-    ax.legend(loc=1)
-    ax.grid()
-    
-    mechanicalWorkMarker = ax.axvline(0, color='k', linewidth=2, zorder=5)
+    mechanicalWorkMarker = pg.InfiniteLine()
+    mechanicalWork.addItem(mechanicalWorkMarker)
     window.plotMarkers.append(mechanicalWorkMarker)
     
-def plotPistonForces(window, cycleAnalysis, subplotPosition):
-    ax = window.analysisPlots.add_subplot(subplotPosition)
+    pistonForces = window.canvas.addPlot(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,11] / 1000, name="PistonForces", title="PistonForces", row=2, col=1)
     
-    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,11] / 1000, color='b', label="F_O")
-    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,12] / 1000, color='r', label="F_U")
-    ax.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,13] / 1000, color='g', label="F_R")
-
-    ax.set_xlabel("Degrees")
-    ax.set_ylabel("Force [kN]")
-    ax.set_title("Force variation")
-    ax.set_xticks(np.arange(0, 390, 30))
-    ax.set_yticks(np.arange(-500, 1750, 250))
-    ax.set_xlim(0, 360)
-    ax.set_ylim(-500, 1500)
-    ax.margins(x=0)
-    ax.legend(loc=7)
-    ax.grid()
-    
-    pistonForcesMarker = ax.axvline(0, color='k', linewidth=2, zorder=5)
+    pistonForcesMarker = pg.InfiniteLine()
+    pistonForces.addItem(pistonForcesMarker)
     window.plotMarkers.append(pistonForcesMarker)

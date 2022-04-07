@@ -50,6 +50,9 @@ Notes:
     - Used "decorations" to add the animation
     - Changed from video to VTK-animation
     - Development of animation proved difficult due to visualization of change and performance issues
+        - Tried using 'FuncAnimation()' and 'blit=True'
+        - May change to 'QtChart', 'PyQtGraph', or 'PyQWT'
+            - Not using 'PyQWT' due to not receiving support since 2014
 
 
 *********************************************************************************************************
