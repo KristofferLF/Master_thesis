@@ -1,5 +1,7 @@
 import os
 import random
+from turtle import color, width
+from matplotlib.axis import XAxis
 from matplotlib.lines import Line2D
 import numpy as np
 import matplotlib.pyplot as plt
@@ -182,34 +184,44 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
 def createSchmidtPlots(window, cycleAnalysis):
     window.canvas = pg.GraphicsLayoutWidget()
     window.canvas.resize(1000, 880)
+    window.canvas.setBackground('w')
     
     #volumeVariationViewBox = window.canvas.addItem()
     volumeVariation = window.canvas.addPlot(name="VolumeVariation", title="VolumeVariation")
-    volumeVariation.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2])
-    volumeVariation.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2] + cycleAnalysis[:,3])
+    compressionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2], pen='b')
+    expansionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2] + cycleAnalysis[:,3], pen='g')
+    xAxis = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=np.zeros_like(cycleAnalysis[:,0]))
+    filledCompressionArea = pg.FillBetweenItem(xAxis, compressionCurve, 'r')
+    filledTotalArea = pg.FillBetweenItem(compressionCurve, expansionCurve, 'b')
+    volumeVariation.addItem(filledCompressionArea)
+    volumeVariation.addItem(filledTotalArea)
     
-    volumeVariationMarker = pg.InfiniteLine()
+    volumeVariationMarker = pg.InfiniteLine(pen=pg.mkPen('k', width=3))
     volumeVariation.addItem(volumeVariationMarker)
     window.plotMarkers.append(volumeVariationMarker)
     
     circuitPressure = window.canvas.addPlot(name="CircuitPressure", title="CircuitPressure")
-    circuitPressure.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,6])
-    circuitPressure.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,7])
-    circuitPressure.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,14])
-    circuitPressure.plot(x=cycleAnalysis[:,0], y=cycleAnalysis[:,15])
+    p1 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,6], pen='b')
+    p2 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,7], pen='r')
+    p3 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,14], pen='g')
+    p4 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,15], pen='y')
+    circuitPressure.addItem(p1)
+    circuitPressure.addItem(p2)
+    circuitPressure.addItem(p3)
+    circuitPressure.addItem(p4)
     
-    circuitPressureMarker = pg.InfiniteLine()
+    circuitPressureMarker = pg.InfiniteLine(pen=pg.mkPen('k', width=3))
     circuitPressure.addItem(circuitPressureMarker)
     window.plotMarkers.append(circuitPressureMarker)
     
     mechanicalWork = window.canvas.addPlot(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,8] / 1000, name="MechanicalWork", title="MechanicalWork", row=2, col=0)
     
-    mechanicalWorkMarker = pg.InfiniteLine()
+    mechanicalWorkMarker = pg.InfiniteLine(pen=pg.mkPen('k', width=3))
     mechanicalWork.addItem(mechanicalWorkMarker)
     window.plotMarkers.append(mechanicalWorkMarker)
     
     pistonForces = window.canvas.addPlot(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,11] / 1000, name="PistonForces", title="PistonForces", row=2, col=1)
     
-    pistonForcesMarker = pg.InfiniteLine()
+    pistonForcesMarker = pg.InfiniteLine(pen=pg.mkPen('k', width=3))
     pistonForces.addItem(pistonForcesMarker)
     window.plotMarkers.append(pistonForcesMarker)

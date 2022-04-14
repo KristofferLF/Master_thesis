@@ -11,9 +11,9 @@ TODO:
     ------------------------------------------------------------------------------------------------------
     4. Add a matplotlib-graph to the state window                                                   *DONE*
     5. Add additional graphs or a selected choice of graphs.                                        *DONE*
-    6. Add a point and a line (e.g. red) to illustrate the current state
+    6. Add a point and a line (e.g. red) to illustrate the current state                            *DONE*
         - Use modulus (%) to limit the position of the indicator to 0-360 degrees
-    7. Expand the parallel animation to update the indicator in the graph
+    7. Expand the parallel animation to update the indicator in the graph                           *DONE*
     ------------------------------------------------------------------------------------------------------
     8. Add easement-curve to the parallel animation (Optional)
     9. Finalize the design of the 'State'-window
