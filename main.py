@@ -274,9 +274,7 @@ class StateWindow(QDialog):
         self.widget = QVTKRenderWindowInteractor(window)
         self.widget.setFixedSize(450, 800)
         self.widget.Initialize()
-        #self.widget.Start()
         self._degree = 0
-        self.needCatchup = False
         
         self.stirlingAnimation = StirlingAnimation()
         self.ren = self.stirlingAnimation.getRenderer()
@@ -393,10 +391,8 @@ class StateWindow(QDialog):
         
         createSchmidtPlots(self, self.cycleAnalysis)
         
+        self.canvas.setFocusPolicy(QtCore.Qt.NoFocus)
         #self.analysisPlots.subplots_adjust(bottom=0.06, left=0.08, right=0.98, top=0.97)
-        
-    def createPlotMarker(self):
-        self.plotMarker
         
     @pyqtProperty(int)
     def degree(self):

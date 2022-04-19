@@ -182,17 +182,41 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
     pdfPages.close()
     
 def createSchmidtPlots(window, cycleAnalysis):
-    window.canvas = pg.GraphicsLayoutWidget()
-    window.canvas.resize(1000, 880)
+    window.canvas = pg.GraphicsLayoutWidget(size=(1000, 800))
+    #window.canvas.resize(1500, 880)
     window.canvas.setBackground('w')
     
-    #volumeVariationViewBox = window.canvas.addItem()
-    volumeVariation = window.canvas.addPlot(name="VolumeVariation", title="VolumeVariation")
-    compressionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2], pen='b')
-    expansionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2] + cycleAnalysis[:,3], pen='g')
-    xAxis = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=np.zeros_like(cycleAnalysis[:,0]))
-    filledCompressionArea = pg.FillBetweenItem(xAxis, compressionCurve, 'r')
+    # Set spacing of values along the x-axis
+    xAxis = [
+        (0, "0"),
+        (60, "60"),
+        (120, "120"),
+        (180, "180"),
+        (240, "240"),
+        (300, "300"),
+        (360, "360"),
+    ]
+    
+    # Volume variation
+    volumeVariationYAxis = [
+        (0, "    0"),
+        (5000000, "5.0E6"),
+        (10000000, "1.0E7"),
+        (15000000, "1.5E7"),
+        (20000000, "2.0E7"),
+        (25000000, "2.5E7"),
+        (30000000, "3.0E7")
+    ]
+    
+    volumeVariation = window.canvas.addPlot(name="Volume variation", title="Volume variation")
+    volumeVariation.addLegend()
+    compressionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2], pen='r', name="Compression area")
+    expansionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2] + cycleAnalysis[:,3], pen='b', name="Expansion area")
+    horizontalLine = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=np.zeros_like(cycleAnalysis[:,0]))
+    filledCompressionArea = pg.FillBetweenItem(horizontalLine, compressionCurve, 'r')
     filledTotalArea = pg.FillBetweenItem(compressionCurve, expansionCurve, 'b')
+    volumeVariation.addItem(compressionCurve)
+    volumeVariation.addItem(expansionCurve)
     volumeVariation.addItem(filledCompressionArea)
     volumeVariation.addItem(filledTotalArea)
     
@@ -200,11 +224,31 @@ def createSchmidtPlots(window, cycleAnalysis):
     volumeVariation.addItem(volumeVariationMarker)
     window.plotMarkers.append(volumeVariationMarker)
     
-    circuitPressure = window.canvas.addPlot(name="CircuitPressure", title="CircuitPressure")
-    p1 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,6], pen='b')
-    p2 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,7], pen='r')
-    p3 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,14], pen='g')
-    p4 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,15], pen='y')
+    volumeVariation.setXRange(0, 360, padding=0)
+    volumeVariation.setYRange(0, 30000000, padding=0)
+    
+    volumeVariation.setLabel('bottom', "Degrees")
+    volumeVariation.setLabel('left', "Volume [mm3]")
+    
+    volumeVariation.getAxis('bottom').setTicks([xAxis])
+    #volumeVariation.getAxis('left').setTicks([volumeVariationYAxis])
+    
+    # Circuit pressure
+    circuitPressureYAxis = [
+        (0, "    0"),
+        (4, "    4"),
+        (8, "    8"),
+        (12, "   12"),
+        (16, "   16"),
+        (20, "   20")
+    ]
+    
+    circuitPressure = window.canvas.addPlot(name="Circuit pressure", title="Circuit pressure")
+    circuitPressure.addLegend()
+    p1 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,6], pen='b', name="P_1")
+    p2 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,7], pen='r', name="P_2")
+    p3 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,14], pen='g', name="P_3")
+    p4 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,15], pen='y', name="P_4")
     circuitPressure.addItem(p1)
     circuitPressure.addItem(p2)
     circuitPressure.addItem(p3)
@@ -214,14 +258,62 @@ def createSchmidtPlots(window, cycleAnalysis):
     circuitPressure.addItem(circuitPressureMarker)
     window.plotMarkers.append(circuitPressureMarker)
     
-    mechanicalWork = window.canvas.addPlot(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,8] / 1000, name="MechanicalWork", title="MechanicalWork", row=2, col=0)
+    circuitPressure.setXRange(0, 360, padding=0)
+    circuitPressure.setYRange(0, 20, padding=0)
+    
+    circuitPressure.setLabel('bottom', "Degrees")
+    circuitPressure.setLabel('left', "Pressure [N/mm2]")
+    
+    circuitPressure.getAxis('bottom').setTicks([xAxis])
+    
+    # Mechanical work
+    mechanicalWork = window.canvas.addPlot(name="Mechanical work", title="Mechanical work", row=2, col=0)
+    mechanicalWork.addLegend()
+    w1 = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,8] / 1000, pen='b', name="W_1")
+    w2 = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,9] / 1000, pen='r', name="W_2")
+    w3 = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,10] / 1000, pen='g', name="W_3")
+    mechanicalWork.addItem(w1)
+    mechanicalWork.addItem(w2)
+    mechanicalWork.addItem(w3)
     
     mechanicalWorkMarker = pg.InfiniteLine(pen=pg.mkPen('k', width=3))
     mechanicalWork.addItem(mechanicalWorkMarker)
     window.plotMarkers.append(mechanicalWorkMarker)
     
+    mechanicalWork.setXRange(0, 360, padding=0)
+    mechanicalWork.setYRange(-20, 20, padding=0)
+    
+    mechanicalWork.setLabel('bottom', "Degrees")
+    mechanicalWork.setLabel('left', "Work [kNm]")
+    
+    mechanicalWork.getAxis('bottom').setTicks([xAxis])
+    
+    # Piston forces
     pistonForces = window.canvas.addPlot(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,11] / 1000, name="PistonForces", title="PistonForces", row=2, col=1)
+    pistonForces.addLegend()
+    fo = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,11] / 1000, pen='b', name="F_O")
+    fu = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,12] / 1000, pen='r', name="F_U")
+    fr = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,13] / 1000, pen='g', name="F_R")
+    pistonForces.addItem(fo)
+    pistonForces.addItem(fu)
+    pistonForces.addItem(fr)
     
     pistonForcesMarker = pg.InfiniteLine(pen=pg.mkPen('k', width=3))
     pistonForces.addItem(pistonForcesMarker)
     window.plotMarkers.append(pistonForcesMarker)
+    
+    pistonForces.setXRange(0, 360, padding=0)
+    pistonForces.setYRange(-500, 1500, padding=0)
+    
+    pistonForces.setLabel('bottom', "Degrees")
+    pistonForces.setLabel('left', "Force [kN]")
+    
+    pistonForces.getAxis('bottom').setTicks([xAxis])
+    
+    #window.canvas.ci.layout.setRowStretchFactor(0, 4)
+    #window.canvas.ci.layout.setRowStretchFactor(1, 1)
+    #window.canvas.ci.layout.setColumnStretchFactor(0, 1)
+    #window.canvas.ci.layout.setColumnStretchFactor(1, 1)
+    #window.canvas.ci.layout.setColumnMaximumWidth(0,100)
+    #window.canvas.ci.layout.setColumnMaximumWidth(1,100)
+    window.canvas.ci.layout.setContentsMargins(10, 0, 30, 10)
