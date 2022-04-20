@@ -1,20 +1,13 @@
-import random
 from PyQt5 import QtCore
-from matplotlib import animation
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QApplication, QDialog, QWidget, QProgressBar, QSpinBox, QSlider
 import sys
 from PyQt5.QtCore import pyqtSignal, pyqtProperty, QPropertyAnimation, Qt
 from PyQt5 import QtGui, QtOpenGL
 from filemanager import readFromJSON, writeToJSON, writeResultsToCSV
-from schmidt import *
+from analysis import *
 from animation import StirlingAnimation
-import matplotlib.pyplot as plt
 import pyqtgraph as pg
-#plt.use('Qt5Agg')
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-#from matplotlib.figure import Figure
-import numpy as np
 import sys
 
 def checkValues(values):
@@ -319,8 +312,6 @@ class StateWindow(QDialog):
         self.animation.setDuration(10000)
         self.animation.start()
         
-        # StartValue = self.degree, EndValue = self.degree + 360
-        
         # Create widgets
         self.returnButton = QPushButton("Return")
         self.returnButton.setFixedSize(100, 50)
@@ -384,15 +375,13 @@ class StateWindow(QDialog):
         print(calculationValues)
         self.cycleAnalysis = schmidtAnalysis(calculationValues)
         
-        self.analysisPlots = pg.plot()
-        self.analysisPlots.clear()
-        
+        self.canvas = pg.GraphicsLayoutWidget(size=(1000, 800))
+        self.canvas.setBackground('w')
         self.plotMarkers = []
         
         createSchmidtPlots(self, self.cycleAnalysis)
         
         self.canvas.setFocusPolicy(QtCore.Qt.NoFocus)
-        #self.analysisPlots.subplots_adjust(bottom=0.06, left=0.08, right=0.98, top=0.97)
         
     @pyqtProperty(int)
     def degree(self):

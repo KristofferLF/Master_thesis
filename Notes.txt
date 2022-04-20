@@ -61,3 +61,4 @@ Notes:
 Possible features:
     - Set size-parameters of animation from the given input-data
     - Synchronize animation and data plotting
+    - Set custom degree-stepsize when calculating results (e.g. 1-15 degrees)
