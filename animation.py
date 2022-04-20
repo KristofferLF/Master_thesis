@@ -567,7 +567,6 @@ class ActorTroup(QObject):
         
         print("Degree: " + str(degree))
 
-
 if __name__ == '__main__':
     stirlingClass = StirlingAnimation()
     degree = 0

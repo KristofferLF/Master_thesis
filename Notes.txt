@@ -9,11 +9,11 @@ TODO:
             - Use 'setDuration'
                 - Suggestion: 5000, 10000, and 15000
     ------------------------------------------------------------------------------------------------------
-    4. Add a matplotlib-graph to the state window
-    5. Add a point and a line (e.g. red) to illustrate the current state
+    4. Add a matplotlib-graph to the state window                                                   *DONE*
+    5. Add additional graphs or a selected choice of graphs.                                        *DONE*
+    6. Add a point and a line (e.g. red) to illustrate the current state                            *DONE*
         - Use modulus (%) to limit the position of the indicator to 0-360 degrees
-    6. Expand the parallel animation to update the indicator in the graph
-    7. Add additional graphs or a selected choice of graphs.
+    7. Expand the parallel animation to update the indicator in the graph                           *DONE*
     ------------------------------------------------------------------------------------------------------
     8. Add easement-curve to the parallel animation (Optional)
     9. Finalize the design of the 'State'-window
@@ -38,7 +38,7 @@ TODO:
     17. Finalize the design of the application
     18. Remove unnecessary files
         - Including this
-    19. Code clean-up
+    19. Code clean-up and documentation for each method and variable
     20. Create an executable and check whether it works
 
 
@@ -48,7 +48,11 @@ TODO:
 Notes:
     - Changed from PySide2 to PyQt5
     - Used "decorations" to add the animation
-    - Changed from video to 
+    - Changed from video to VTK-animation
+    - Development of animation proved difficult due to visualization of change and performance issues
+        - Tried using 'FuncAnimation()' and 'blit=True'
+        - May change to 'QtChart', 'PyQtGraph', or 'PyQWT'
+            - Not using 'PyQWT' due to not receiving support since 2014
 
 
 *********************************************************************************************************
