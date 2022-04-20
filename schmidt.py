@@ -198,23 +198,13 @@ def createSchmidtPlots(window, cycleAnalysis):
     ]
     
     # Volume variation
-    volumeVariationYAxis = [
-        (0, "    0"),
-        (5000000, "5.0E6"),
-        (10000000, "1.0E7"),
-        (15000000, "1.5E7"),
-        (20000000, "2.0E7"),
-        (25000000, "2.5E7"),
-        (30000000, "3.0E7")
-    ]
-    
     volumeVariation = window.canvas.addPlot(name="Volume variation", title="Volume variation")
     volumeVariation.addLegend()
-    compressionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2], pen='r', name="Compression area")
-    expansionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2] + cycleAnalysis[:,3], pen='b', name="Expansion area")
+    compressionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2], pen=pg.mkColor(205, 92, 92), name="Compression area")
+    expansionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2] + cycleAnalysis[:,3], pen=pg.mkColor(135, 206, 250), name="Expansion area")
     horizontalLine = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=np.zeros_like(cycleAnalysis[:,0]))
-    filledCompressionArea = pg.FillBetweenItem(horizontalLine, compressionCurve, 'r')
-    filledTotalArea = pg.FillBetweenItem(compressionCurve, expansionCurve, 'b')
+    filledCompressionArea = pg.FillBetweenItem(horizontalLine, compressionCurve, pg.mkColor(205, 92, 92))
+    filledTotalArea = pg.FillBetweenItem(compressionCurve, expansionCurve, pg.mkColor(135, 206, 250))
     volumeVariation.addItem(compressionCurve)
     volumeVariation.addItem(expansionCurve)
     volumeVariation.addItem(filledCompressionArea)
@@ -231,18 +221,8 @@ def createSchmidtPlots(window, cycleAnalysis):
     volumeVariation.setLabel('left', "Volume [mm3]")
     
     volumeVariation.getAxis('bottom').setTicks([xAxis])
-    #volumeVariation.getAxis('left').setTicks([volumeVariationYAxis])
     
     # Circuit pressure
-    circuitPressureYAxis = [
-        (0, "    0"),
-        (4, "    4"),
-        (8, "    8"),
-        (12, "   12"),
-        (16, "   16"),
-        (20, "   20")
-    ]
-    
     circuitPressure = window.canvas.addPlot(name="Circuit pressure", title="Circuit pressure")
     circuitPressure.addLegend()
     p1 = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,6], pen='b', name="P_1")
