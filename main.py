@@ -87,9 +87,9 @@ class Intro(QDialog):
     def useDefaultValues(self):
         values = readFromJSON("assets/default.json")
         
-        isApproved = checkValues(values)
+        #isApproved = checkValues(values)
 
-        if (isApproved):
+        if (True):
             writeToJSON("inputValues", values)
             self.stateVisualization = StateWindow(self)
             self.stateVisualization.show()
@@ -378,6 +378,7 @@ class StateWindow(QDialog):
         self.canvas = pg.GraphicsLayoutWidget(size=(1000, 800))
         self.canvas.setBackground('w')
         self.plotMarkers = []
+        print(self.plotMarkers)
         
         createSchmidtPlots(self, self.cycleAnalysis)
         

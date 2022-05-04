@@ -21,6 +21,7 @@ TODO:
         - Also includes renaming the windows
     ------------------------------------------------------------------------------------------------------
     11. Add adiabatic analysis
+        - Add required values to 'Default'-file, 'Custom'-file, and manual input
     12. Add simple analysis
     13. Expand and rename 'schmidtanalysis.csv'
     14. Add matplotlib-graphs which show the results from these analyses to the State-window
@@ -53,6 +54,13 @@ Notes:
         - Tried using 'FuncAnimation()' and 'blit=True'
         - May change to 'QtChart', 'PyQtGraph', or 'PyQWT'
             - Not using 'PyQWT' due to not receiving support since 2014
+    - Add graph / table of efficiency
+    - Double-check heat-equations before delivery
+    - The analysis-methods were first presented by Berchowitz and Urieli (1984)
+    - Write about operating fluid, which is helium
+        - User can add their own, but helium could be used as a default-value if it isn't too specific
+    - Add graphs for Schmidt-, adiabatic-, and simple analysis showing temperature variations with explanation for the different
+      considerations they make (e.g., isothermal and adiabatic)
 
 
 *********************************************************************************************************

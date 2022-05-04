@@ -16,19 +16,19 @@ def readFromJSON(fileName):
     
     jsonData = json.load(jsonFile)
     
-    values = []
-    
-    values.append(jsonData['additional'][0]['gasconstant'])
-    values.append(jsonData['additional'][1]['mass'])
-    values.append(jsonData['temperature'][0]['hot'])
-    values.append(jsonData['temperature'][1]['regenerator'])
-    values.append(jsonData['temperature'][2]['cold'])
-    values.append(jsonData['volume'][0]['swept'])
-    values.append(jsonData['volume'][1]['regenerator'])
-    values.append(jsonData['volume'][2]['average'])
-    values.append(jsonData['area'][0]['piston'])
-    values.append(jsonData['area'][1]['cylinder'])
-    values.append(jsonData['additional'][2]['phaseangle'])
+    values = {
+        "gasconstant": jsonData['additional'][0]['gasconstant'],
+        "mass": jsonData['additional'][1]['mass'],
+        "tHeater": jsonData['temperature'][0]['hot'],
+        "tRegenerator": jsonData['temperature'][1]['regenerator'],
+        "tCooler": jsonData['temperature'][2]['cold'],
+        "vSwept": jsonData['volume'][0]['swept'],
+        "vRegenerator": jsonData['volume'][1]['regenerator'],
+        "vAverage": jsonData['volume'][2]['average'],
+        "aPiston": jsonData['area'][0]['piston'],
+        "aCylinder": jsonData['area'][1]['cylinder'],
+        "phaseangle": jsonData['additional'][2]['phaseangle']
+    }
         
     jsonFile.close()
     
@@ -46,17 +46,17 @@ def writeToJSON(fileName, values):
     """
     try:
         # Convert to dict?
-        gasConstant = str(values[0])
-        mass = str(values[1])
-        tHot = str(values[2])
-        tReg = str(values[3])
-        tCold = str(values[4])
-        sweptVol = str(values[5])
-        regVol = str(values[6])
-        avgVol = str(values[7])
-        rodArea = str(values[8])
-        cylArea = str(values[9])
-        phaseAngle = str(values[10])
+        gasConstant = str(values["gasconstant"])
+        mass = str(values["mass"])
+        tHot = str(values["tHeater"])
+        tReg = str(values["tRegenerator"])
+        tCold = str(values["tCooler"])
+        sweptVol = str(values["vSwept"])
+        regVol = str(values["vRegenerator"])
+        avgVol = str(values["vAverage"])
+        rodArea = str(values["aPiston"])
+        cylArea = str(values["aCylinder"])
+        phaseAngle = str(values["phaseangle"])
     except:
         print("Missing required values.")
     
