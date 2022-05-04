@@ -19,15 +19,17 @@ def readFromJSON(fileName):
     values = {
         "gasconstant": jsonData['additional'][0]['gasconstant'],
         "mass": jsonData['additional'][1]['mass'],
-        "tHeater": jsonData['temperature'][0]['hot'],
+        "tHeater": jsonData['temperature'][0]['heater'],
         "tRegenerator": jsonData['temperature'][1]['regenerator'],
-        "tCooler": jsonData['temperature'][2]['cold'],
+        "tCooler": jsonData['temperature'][2]['cooler'],
         "vSwept": jsonData['volume'][0]['swept'],
         "vRegenerator": jsonData['volume'][1]['regenerator'],
         "vAverage": jsonData['volume'][2]['average'],
         "aPiston": jsonData['area'][0]['piston'],
         "aCylinder": jsonData['area'][1]['cylinder'],
-        "phaseangle": jsonData['additional'][2]['phaseangle']
+        "phaseangle": jsonData['additional'][2]['phaseangle'],
+        "constant_pressure_heat_capacity": jsonData['additional'][3]['constant_pressure_heat_capacity'],
+        "constant_volume_heat_capacity": jsonData['additional'][4]['constant_volume_heat_capacity']
     }
         
     jsonFile.close()
@@ -45,7 +47,6 @@ def writeToJSON(fileName, values):
     'values' List containing string values from GUI-input
     """
     try:
-        # Convert to dict?
         gasConstant = str(values["gasconstant"])
         mass = str(values["mass"])
         tHot = str(values["tHeater"])
@@ -57,6 +58,8 @@ def writeToJSON(fileName, values):
         rodArea = str(values["aPiston"])
         cylArea = str(values["aCylinder"])
         phaseAngle = str(values["phaseangle"])
+        constant_pressure_heat_capacity = str(values["constant_pressure_heat_capacity"])
+        constant_volume_heat_capacity = str(values["constant_volume_heat_capacity"])
     except:
         print("Missing required values.")
     
@@ -65,12 +68,14 @@ def writeToJSON(fileName, values):
                   "},{\"average\":" + avgVol +
                   "}],\"area\":[{\"piston\":" + rodArea +
                   "},{\"cylinder\":" + cylArea + 
-                  "}],\"temperature\":[{\"hot\":" + tHot +
+                  "}],\"temperature\":[{\"heater\":" + tHot +
                   "},{\"regenerator\":" + tReg +
-                  "},{\"cold\":" + tCold +
+                  "},{\"cooler\":" + tCold +
                   "}],\"additional\":[{\"gasconstant\":" + gasConstant +
                   "},{\"mass\":" + mass +
-                  "},{\"phaseangle\":" + phaseAngle + "}]}")
+                  "},{\"phaseangle\":" + phaseAngle +
+                  "},{\"constant_pressure_heat_capacity\":" + constant_pressure_heat_capacity +
+                  "},{\"constant_volume_heat_capacity\":" + constant_volume_heat_capacity + "}]}")
     try:    
         with open("assets/" + fileName + ".json", 'w') as jsonFile:
             print(fileName)

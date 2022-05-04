@@ -15,14 +15,14 @@ TODO:
         - Use modulus (%) to limit the position of the indicator to 0-360 degrees
     7. Expand the parallel animation to update the indicator in the graph                           *DONE*
     ------------------------------------------------------------------------------------------------------
-    8. Add easement-curve to the parallel animation (Optional)
+    8. Add easement-curve to the parallel animation (Optional)                                   *REMOVED*
     9. Finalize the design of the 'State'-window
     10. Adapt the 'Result'-window to the newly added changes
         - Also includes renaming the windows
     ------------------------------------------------------------------------------------------------------
     11. Add adiabatic analysis
         - Add required values to 'Default'-file, 'Custom'-file, and manual input
-    12. Add simple analysis
+    12. Add simple analysis                                                                      *REMOVED*
     13. Expand and rename 'schmidtanalysis.csv'
     14. Add matplotlib-graphs which show the results from these analyses to the State-window
         - Including potential alterations to the window-design
@@ -61,6 +61,11 @@ Notes:
         - User can add their own, but helium could be used as a default-value if it isn't too specific
     - Add graphs for Schmidt-, adiabatic-, and simple analysis showing temperature variations with explanation for the different
       considerations they make (e.g., isothermal and adiabatic)
+    - Simple analysis was not added due to time, usability, and complexity
+    - Assumptions:
+        - As shown in the figure, V_heater and V_cooler = 0
+            - P. 28 in PowerPoint
+            - Idealized optimal configuration
 
 
 *********************************************************************************************************

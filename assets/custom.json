@@ -20,13 +20,13 @@
     ],
     "temperature": [
         {
-            "hot": 100.0
+            "heater": 100.0
         },
         {
             "regenerator": 50.0
         },
         {
-            "cold": 0.0
+            "cooler": 0.0
         }
     ],
     "additional": [
@@ -38,6 +38,12 @@
         },
         {
             "phaseangle": 150.0
+        },
+        {
+            "constant_pressure_heat_capacity": 0.0
+        },
+        {
+            "constant_volume_heat_capacity": 0.0
         }
     ]
 }
