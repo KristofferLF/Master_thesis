@@ -40,10 +40,10 @@
             "phaseangle": 150.0
         },
         {
-            "constant_pressure_heat_capacity": 0.0
+            "constant_pressure_heat_capacity": 5193.0
         },
         {
-            "constant_volume_heat_capacity": 0.0
+            "constant_volume_heat_capacity": 3120.0
         }
     ]
 }

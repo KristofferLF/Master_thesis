@@ -373,14 +373,14 @@ class StateWindow(QDialog):
         calculationValues = readFromJSON("assets/inputValues.json")
         print("These values were read from the JSON-file containing input-values:")
         print(calculationValues)
-        self.cycleAnalysis = schmidtAnalysis(calculationValues)
+        self.schmidtAnalysis = schmidtAnalysis(calculationValues)
         
         self.canvas = pg.GraphicsLayoutWidget(size=(1000, 800))
         self.canvas.setBackground('w')
         self.plotMarkers = []
         print(self.plotMarkers)
         
-        createSchmidtPlots(self, self.cycleAnalysis)
+        createSchmidtPlots(self, self.schmidtAnalysis)
         
         self.canvas.setFocusPolicy(QtCore.Qt.NoFocus)
         
@@ -487,6 +487,8 @@ class ResultWindow(QDialog):
 
         self.schmidtAnalysisFilename = "schmidtanalysis"
         self.schmidtResultsFilename = "schmidtanalysis"
+        self.adiabaticAnalysisFilename = "adiabaticanalysis"
+        self.adiabaticResultsFilename = "adiabaticanalysis"
 
         self.result_message = QLabel("The plots are stored under 'results/" + self.schmidtAnalysisFilename + ".pdf'.")
         self.result_message.setAlignment(QtCore.Qt.AlignCenter)
@@ -512,13 +514,16 @@ class ResultWindow(QDialog):
         calculationValues = readFromJSON("assets/inputValues.json")
         print("These values were read from the JSON-file containing input-values:")
         print(calculationValues)
-        cycleAnalysis = schmidtAnalysis(calculationValues)
+        schmidt = schmidtAnalysis(calculationValues)
+        adiabatic = adiabaticAnalysis(calculationValues, schmidt)
 
         # Plot results
-        plotSchmidtAnalysis(self.schmidtAnalysisFilename, cycleAnalysis)
+        plotSchmidtAnalysis(self.schmidtAnalysisFilename, schmidt)
+        plotAdiabaticAnalysis(self.adiabaticAnalysisFilename, adiabatic)
 
         # Save results
-        writeResultsToCSV(self.schmidtResultsFilename, cycleAnalysis)
+        writeResultsToCSV(self.schmidtResultsFilename, schmidt)
+        writeResultsToCSV(self.adiabaticResultsFilename, adiabatic)
         
         # Create layout and add widgets
         layout = QGridLayout(window)

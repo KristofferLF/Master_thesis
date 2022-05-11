@@ -62,6 +62,7 @@ Notes:
     - Add graphs for Schmidt-, adiabatic-, and simple analysis showing temperature variations with explanation for the different
       considerations they make (e.g., isothermal and adiabatic)
     - Simple analysis was not added due to time, usability, and complexity
+    - Need to alter manual input
     - Assumptions:
         - As shown in the figure, V_heater and V_cooler = 0
             - P. 28 in PowerPoint
