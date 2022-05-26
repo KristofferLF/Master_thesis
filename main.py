@@ -484,6 +484,7 @@ class ResultWindow(QDialog):
         self.complete_message.setAlignment(QtCore.Qt.AlignCenter)
         self.complete_message.setFixedSize(750, 100)
         self.complete_message.setObjectName("complete_message")
+        self.complete_message.setStyleSheet("font-weight: bold; font-size: 30px;")
 
         self.schmidtAnalysisFilename = "schmidtanalysis"
         self.schmidtResultsFilename = "schmidtanalysis"
@@ -495,6 +496,11 @@ class ResultWindow(QDialog):
         self.result_message.setAlignment(QtCore.Qt.AlignCenter)
         self.result_message.setFixedSize(750, 100)
         self.result_message.setObjectName("result_message")
+        
+        self.combinedplots_message = QLabel("The combined plots from each analysis-method are stored under: 'results/" + self.combinedAnalysisFilename + ".pdf'")
+        self.combinedplots_message.setAlignment(QtCore.Qt.AlignCenter)
+        self.combinedplots_message.setFixedSize(750, 100)
+        self.combinedplots_message.setObjectName("combinedplots_message")
 
         self.csv_message = QLabel("The results are stored under: 'results/" + self.schmidtResultsFilename + ".pdf', 'results/" + self.adiabaticResultsFilename + ".pdf'")
         self.csv_message.setAlignment(QtCore.Qt.AlignCenter)
@@ -534,10 +540,11 @@ class ResultWindow(QDialog):
         layout.addWidget(self.complete_message, 0, 0, 2, 5)
         
         layout.addWidget(self.result_message, 2, 0, 1, 5)
-        layout.addWidget(self.csv_message, 3, 0, 1, 5)
+        layout.addWidget(self.combinedplots_message, 3, 0, 1, 5)
+        layout.addWidget(self.csv_message, 4, 0, 1, 5)
         
-        layout.addWidget(self.returnButton, 4, 1, 1, 1)
-        layout.addWidget(self.exitButton, 4, 3, 1, 1)
+        layout.addWidget(self.returnButton, 5, 1, 1, 1)
+        layout.addWidget(self.exitButton, 5, 3, 1, 1)
         
         # Set layout
         self.setLayout(layout)
