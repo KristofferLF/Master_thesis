@@ -34,8 +34,6 @@ def readFromJSON(fileName):
         
     jsonFile.close()
     
-    print(values)
-    
     return values
 
 # Remove the possibility to remove 'readFromCSV'?

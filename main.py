@@ -482,27 +482,30 @@ class ResultWindow(QDialog):
         # Create widgets
         self.complete_message = QLabel("The analysis is complete.")
         self.complete_message.setAlignment(QtCore.Qt.AlignCenter)
-        self.complete_message.setFixedSize(500, 100)
+        self.complete_message.setFixedSize(750, 100)
         self.complete_message.setObjectName("complete_message")
 
         self.schmidtAnalysisFilename = "schmidtanalysis"
         self.schmidtResultsFilename = "schmidtanalysis"
         self.adiabaticAnalysisFilename = "adiabaticanalysis"
         self.adiabaticResultsFilename = "adiabaticanalysis"
+        self.combinedAnalysisFilename = "combinedanalysis"
 
-        self.result_message = QLabel("The plots are stored under 'results/" + self.schmidtAnalysisFilename + ".pdf'.")
+        self.result_message = QLabel("The plots are stored under: 'results/" + self.schmidtAnalysisFilename + ".pdf', 'results/" + self.adiabaticAnalysisFilename + ".pdf'")
         self.result_message.setAlignment(QtCore.Qt.AlignCenter)
-        self.result_message.setFixedSize(500, 100)
+        self.result_message.setFixedSize(750, 100)
         self.result_message.setObjectName("result_message")
 
-        self.csv_message = QLabel("The results are stored under 'results/" + self.schmidtResultsFilename + ".csv'.")
+        self.csv_message = QLabel("The results are stored under: 'results/" + self.schmidtResultsFilename + ".pdf', 'results/" + self.adiabaticResultsFilename + ".pdf'")
         self.csv_message.setAlignment(QtCore.Qt.AlignCenter)
-        self.csv_message.setFixedSize(500, 100)
+        self.csv_message.setFixedSize(750, 100)
         self.csv_message.setObjectName("result_message")
 
         self.returnButton = QPushButton("Return")
         self.returnButton.setFixedSize(150, 50)
         self.returnButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        
+          
         self.exitButton = QPushButton("Exit application")
         self.exitButton.setFixedSize(150, 50)
         self.exitButton.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -512,14 +515,15 @@ class ResultWindow(QDialog):
 
         # Calculate results
         calculationValues = readFromJSON("assets/inputValues.json")
-        print("These values were read from the JSON-file containing input-values:")
-        print(calculationValues)
+        #print("These values were read from the JSON-file containing input-values:")
+        #print(calculationValues)
         schmidt = schmidtAnalysis(calculationValues)
         adiabatic = adiabaticAnalysis(calculationValues, schmidt)
 
         # Plot results
         plotSchmidtAnalysis(self.schmidtAnalysisFilename, schmidt)
         plotAdiabaticAnalysis(self.adiabaticAnalysisFilename, adiabatic)
+        plotCombinedAnalysis(self.combinedAnalysisFilename, schmidt, adiabatic)
 
         # Save results
         writeResultsToCSV(self.schmidtResultsFilename, schmidt)

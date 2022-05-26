@@ -1,3 +1,4 @@
+import math
 import os
 import random
 from turtle import color, width
@@ -57,7 +58,6 @@ def schmidtAnalysis(values):
         cycleAnalysis[i,5] = Sum_V_div_T    # [mm^3/K]
         P_1 = m * R * 1000 / Sum_V_div_T
         cycleAnalysis[i,6] = P_1            # [N/mm^2]
-        print("P_1: " + str(P_1))
 
         degree += 10
 
@@ -332,7 +332,29 @@ def adiabaticAnalysis(values, schmidtResults):
     T_c = 273.15 + Tc_c     # [K]
     
     for i in range(1,37):
+        T_r = (T_h - T_c) / math.log(T_h - T_c)
+        
         p = m * R * 1000 / (adiabaticAnalysis[i, 2] / T_h + values["vRegenerator"] / T_r + adiabaticAnalysis[i, 3] / T_c)
+        dp = p * ((adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2])/ T_c + (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) / T_h) / (adiabaticAnalysis[i, 2] / T_h + values["vRegenerator"] / T_r + adiabaticAnalysis[i, 3] / T_c)
+        
+        mc = (p * adiabaticAnalysis[i,2] / (R * T_c)) / 1000
+        mk = 0
+        mr = (p * values["vRegenerator"] / (R * T_r)) / 1000
+        mh = 0
+        me = (p * adiabaticAnalysis[i,3] / (R * T_h)) / 1000
+        
+        dmc = ((p * (adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2]) + adiabaticAnalysis[i,2] * dp) / (R * T_c)) / 1000
+        dme = ((p * (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) + adiabaticAnalysis[i,3] * dp) / (R * T_h)) / 1000
+        dmk = mk * dp / p
+        dmr = mr * dp / p
+        dmh = mh * dp / p
+        
+        dTc = T_c * (dp / p + (adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2]) / adiabaticAnalysis[i,2] - dmc / mc)
+        dTh = T_h * (dp / p + (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) / adiabaticAnalysis[i,3] - dme / me)
+        
+        T_c += dTc
+        T_h += dTh
+        
         dWc = p * (adiabaticAnalysis[i, 2] - adiabaticAnalysis[i-1, 2]) / 1000
         dWe = p * (adiabaticAnalysis[i, 3] - adiabaticAnalysis[i-1, 3]) / 1000
         dW = dWc + dWe
@@ -342,8 +364,6 @@ def adiabaticAnalysis(values, schmidtResults):
         adiabaticAnalysis[i, 9] = dWe
         adiabaticAnalysis[i, 10] = dW
         adiabaticAnalysis[i, 11] = p * values["aPiston"]
-        print("p: " + str(p) + ", aPiston: " + str(values["aPiston"]))
-        print(adiabaticAnalysis[i, 11])
         
     return adiabaticAnalysis
         
@@ -382,7 +402,7 @@ def plotAdiabaticAnalysis(resultFileName, cycleAnalysis):
     plt.figure()
     plt.clf()
 
-    plt.plot(cycleAnalysis[:,0], cycleAnalysis[:,7], color='b', label="P")
+    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,7], color='b', label="P")
 
     plt.xticks(np.arange(0, 390, 30))
     plt.xlabel("Degrees")
@@ -422,11 +442,87 @@ def plotAdiabaticAnalysis(resultFileName, cycleAnalysis):
 def createAdiabaticPlots(window, cycleAnalysis):
     print()
 #endregion
+
+#region Combined plots
+def plotCombinedAnalysis(resultFileName, schmidtResults, adiabaticResults):
+    '''
+    Plots results from an both schmidt and adiabatic analysis. Volume, pressure, mechanical work, and forces are plotted against the number of degrees for one Stirling cycle.
+    Input: 'resultFileName' String containing the desired path for a PDF containing the plots. Must not include path or '.pdf'.
+    'schmidtResults' Numpy array containing calculated results from the Schmidt analysis.
+    'adiabaticResults' Numpy array containing calculated results from the adiabatic analysis.
+    '''
+
+    # Removes result-file if it exists
+    if os.path.exists("results/" + resultFileName + ".pdf"):
+        os.remove("results/" + resultFileName + ".pdf")
+
+    pdfPages = PdfPages("results/" + resultFileName + ".pdf")
+    plt.figure()
+    plt.clf()
+
+    # Plot volume variation
+    plt.fill_between(schmidtResults[:,0], schmidtResults[:,2] + schmidtResults[:,3], color='lightskyblue', label="Expansion volume", zorder=2)
+    plt.fill_between(schmidtResults[:,0], schmidtResults[:,2], color='indianred', label="Compression volume", zorder=3)
     
-#region Complete analysis
-def fullAnalysis(values):
-    print()
+    plt.xticks(np.arange(0, 390, 30))
+    plt.xlabel("Degrees")
+    plt.yticks(np.arange(0, 32500000, 2500000))
+    plt.ylabel("Volume [mm3]")
+    plt.title("Volume variation")
+    plt.margins(x=0)
+    plt.ylim(0, 30000000)
+    plt.grid()
+    plt.legend()
+
+    pdfPages.savefig()
+
+    # Plot circuit pressure
+    plt.figure()
+    plt.clf()
+
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,6], color='b', label="Schmidt: P_1")
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,7], color='r', label="Schmidt: P_2")
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,14], color='g', label="Schmidt: P_3")
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,15], color='y', label="Schmidt: P_4")
     
-def plotAllAnalyses():
-    print()
+    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,7], color='magenta', label="Adiabatic: P")
+
+    plt.xticks(np.arange(0, 390, 30))
+    plt.xlabel("Degrees")
+    plt.yticks(np.arange(0, 22, 2))
+    plt.ylabel("Pressure [N/mm2]")
+    plt.title("Pressure variation")
+    plt.margins(x=0)
+    plt.ylim(0, 20)
+    plt.grid()
+    plt.legend()
+
+    pdfPages.savefig()
+
+    # Plot mechanical work
+    plt.figure()
+    plt.clf()
+    
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,8] / 1000, color='darkviolet', label="Schmidt: W_1")
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,9] / 1000, color='b', label="Schmidt: W_2")
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,10] / 1000, color='cyan', label="Schmidt: W_R")
+
+    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,8] / 1000, color='r', label="Adiabatic: dWe")
+    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,9] / 1000, color='darkorange', label="Adiabatic: dWc")
+    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,10] / 1000, color='y', label="Adiabatic: dW")
+
+    plt.xticks(np.arange(0, 390, 30))
+    plt.xlabel("Degrees")
+    plt.yticks(np.arange(-25, 25, 2.5))
+    plt.ylabel("Work [kNm]")
+    plt.title("Work variation")
+    plt.margins(x=0)
+    plt.xlim(0, 360)
+    plt.ylim(-20, 20)
+    plt.grid()
+    plt.legend()
+
+    pdfPages.savefig()
+
+    pdfPages.close()
 #endregion
