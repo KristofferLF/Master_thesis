@@ -19,9 +19,9 @@ def readFromJSON(fileName):
     values = {
         "gasconstant": jsonData['additional'][0]['gasconstant'],
         "mass": jsonData['additional'][1]['mass'],
-        "tHeater": jsonData['temperature'][0]['heater'],
+        "tExpansion": jsonData['temperature'][0]['expansion'],
         "tRegenerator": jsonData['temperature'][1]['regenerator'],
-        "tCooler": jsonData['temperature'][2]['cooler'],
+        "tCompression": jsonData['temperature'][2]['compression'],
         "vSwept": jsonData['volume'][0]['swept'],
         "vRegenerator": jsonData['volume'][1]['regenerator'],
         "vAverage": jsonData['volume'][2]['average'],
@@ -47,9 +47,9 @@ def writeToJSON(fileName, values):
     try:
         gasConstant = str(values["gasconstant"])
         mass = str(values["mass"])
-        tHot = str(values["tHeater"])
+        tHot = str(values["tExpansion"])
         tReg = str(values["tRegenerator"])
-        tCold = str(values["tCooler"])
+        tCold = str(values["tCompression"])
         sweptVol = str(values["vSwept"])
         regVol = str(values["vRegenerator"])
         avgVol = str(values["vAverage"])
@@ -66,9 +66,9 @@ def writeToJSON(fileName, values):
                   "},{\"average\":" + avgVol +
                   "}],\"area\":[{\"piston\":" + rodArea +
                   "},{\"cylinder\":" + cylArea + 
-                  "}],\"temperature\":[{\"heater\":" + tHot +
+                  "}],\"temperature\":[{\"expansion\":" + tHot +
                   "},{\"regenerator\":" + tReg +
-                  "},{\"cooler\":" + tCold +
+                  "},{\"compression\":" + tCold +
                   "}],\"additional\":[{\"gasconstant\":" + gasConstant +
                   "},{\"mass\":" + mass +
                   "},{\"phaseangle\":" + phaseAngle +

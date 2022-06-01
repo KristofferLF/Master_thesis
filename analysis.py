@@ -13,7 +13,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 def schmidtAnalysis(values):
     """
     Performs a Schmidt-analysis and returns a matrix containing the results of the analysis.
-    Input: 'values' List of values used for calculation [R, m, Th_c, Tr_c, Tc_c, V_cyl, V_reg, V_c_avg, piston_rod_area, piston_cyl_area, phaseAngle_beta]
+    Input: 'values' List of values used for calculation [R, m, Texp_c, Treg_c, Tcom_c, V_cyl, V_reg, V_com_avg, piston_rod_area, piston_cyl_area, phaseAngle_beta]
     Output: 'cycleAnalysis' Matrix of results
     """
     # Constants
@@ -21,17 +21,17 @@ def schmidtAnalysis(values):
     m = values["mass"]   # [kg]
 
     ## Temperature
-    Th_c = values["tHeater"]    # [C]
-    Tr_c = values["tRegenerator"]    # [C]
-    Tc_c = values["tCooler"]    # [C]
-    T_h = 273.15 + Th_c     # [K]
-    T_r = 273.15 + Tr_c     # [K]
-    T_c = 273.15 + Tc_c     # [K]
+    Texp_c = values["tExpansion"]    # [C]
+    Treg_c = values["tRegenerator"]    # [C]
+    Tcom_c = values["tCompression"]    # [C]
+    T_exp = 273.15 + Texp_c     # [K]
+    T_reg = 273.15 + Treg_c     # [K]
+    T_com = 273.15 + Tcom_c     # [K]
 
     ## Volume
     V_cyl = values["vSwept"]       # [mm^3]
     V_reg = values["vRegenerator"]       # [mm^3]
-    V_c_avg = values["vAverage"]     # [mm^3]
+    V_com_avg = values["vAverage"]     # [mm^3]
 
     ## Area
     piston_rod_area = values["aPiston"]  # [mm^2]
@@ -48,13 +48,13 @@ def schmidtAnalysis(values):
         cycleAnalysis[i,0] = degree         # [degrees]
         rad = degree * 2 * np.pi / 360
         cycleAnalysis[i,1] = rad            # [rad]
-        V_c = V_c_avg + np.sin(rad) * V_cyl / 2
-        cycleAnalysis[i,2] = V_c            # [mm^3]
-        V_e = V_c_avg + np.sin(rad + beta_rad) * V_cyl / 2
-        cycleAnalysis[i,3] = V_e            # [mm^3]
-        V_t = (V_c + V_e) / 1000000
-        cycleAnalysis[i,4] = V_t            # [dm^3]
-        Sum_V_div_T = (V_c / T_c) + (V_reg / T_r) + (V_e / T_h)
+        V_com = V_com_avg + np.sin(rad) * V_cyl / 2
+        cycleAnalysis[i,2] = V_com            # [mm^3]
+        V_exp = V_com_avg + np.sin(rad + beta_rad) * V_cyl / 2
+        cycleAnalysis[i,3] = V_exp            # [mm^3]
+        V_tot = (V_com + V_exp) / 1000000
+        cycleAnalysis[i,4] = V_tot            # [dm^3]
+        Sum_V_div_T = (V_com / T_com) + (V_reg / T_reg) + (V_exp / T_exp)
         cycleAnalysis[i,5] = Sum_V_div_T    # [mm^3/K]
         P_1 = m * R * 1000 / Sum_V_div_T
         cycleAnalysis[i,6] = P_1            # [N/mm^2]
@@ -70,14 +70,14 @@ def schmidtAnalysis(values):
         cycleAnalysis[i,8] = W_1            # [Nm]
         W_2 = P_1 * (cycleAnalysis[i,3] - cycleAnalysis[i-1,3]) / 1000
         cycleAnalysis[i,9] = W_2            # [Nm]
-        W_r = W_1 + W_2
-        cycleAnalysis[i,10] = W_r           # [Nm]
-        F_o = cycleAnalysis[i,6] * piston_cyl_area
-        cycleAnalysis[i,11] = F_o           # [N]
-        F_u = cycleAnalysis[i,7] * (piston_cyl_area - piston_rod_area)
-        cycleAnalysis[i,12] = F_u           # [N]
-        F_r = F_o - F_u
-        cycleAnalysis[i,13] = F_r           # [N]
+        W_R = W_1 + W_2
+        cycleAnalysis[i,10] = W_R           # [Nm]
+        F_O = cycleAnalysis[i,6] * piston_cyl_area
+        cycleAnalysis[i,11] = F_O           # [N]
+        F_U = cycleAnalysis[i,7] * (piston_cyl_area - piston_rod_area)
+        cycleAnalysis[i,12] = F_U           # [N]
+        F_R = F_O - F_U
+        cycleAnalysis[i,13] = F_R           # [N]
 
     # Assigning P_3 and P_4 [N/mm^2]
     cycleAnalysis[:29,14] = cycleAnalysis[8:,6]
@@ -324,44 +324,44 @@ def adiabaticAnalysis(values, schmidtResults):
     R = values["gasconstant"]   # [J/kg*K]
     m = values["mass"]   # [kg]
     
-    Th_c = values["tHeater"]    # [C]
-    Tr_c = values["tRegenerator"]    # [C]
-    Tc_c = values["tCooler"]    # [C]
-    T_h = 273.15 + Th_c     # [K]
-    T_r = 273.15 + Tr_c     # [K]
-    T_c = 273.15 + Tc_c     # [K]
+    Texp_c = values["tExpansion"]    # [C]
+    Treg_c = values["tRegenerator"]    # [C]
+    Tcom_c = values["tCompression"]    # [C]
+    T_exp = 273.15 + Texp_c     # [K]
+    T_reg = 273.15 + Treg_c     # [K]
+    T_com = 273.15 + Tcom_c     # [K]
     
     for i in range(1,37):
-        T_r = (T_h - T_c) / math.log(T_h - T_c)
+        T_reg = (T_exp - T_com) / math.log(T_exp - T_com)
         
-        p = m * R * 1000 / (adiabaticAnalysis[i, 2] / T_h + values["vRegenerator"] / T_r + adiabaticAnalysis[i, 3] / T_c)
-        dp = p * ((adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2])/ T_c + (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) / T_h) / (adiabaticAnalysis[i, 2] / T_h + values["vRegenerator"] / T_r + adiabaticAnalysis[i, 3] / T_c)
+        p = m * R * 1000 / (adiabaticAnalysis[i, 2] / T_exp + values["vRegenerator"] / T_reg + adiabaticAnalysis[i, 3] / T_com)
+        dp = p * ((adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2])/ T_com + (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) / T_exp) / (adiabaticAnalysis[i, 2] / T_exp + values["vRegenerator"] / T_reg + adiabaticAnalysis[i, 3] / T_com)
         
-        mc = (p * adiabaticAnalysis[i,2] / (R * T_c)) / 1000
+        m_com = (p * adiabaticAnalysis[i,2] / (R * T_com)) / 1000
         mk = 0
-        mr = (p * values["vRegenerator"] / (R * T_r)) / 1000
+        m_reg = (p * values["vRegenerator"] / (R * T_reg)) / 1000
         mh = 0
-        me = (p * adiabaticAnalysis[i,3] / (R * T_h)) / 1000
+        m_exp = (p * adiabaticAnalysis[i,3] / (R * T_exp)) / 1000
         
-        dmc = ((p * (adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2]) + adiabaticAnalysis[i,2] * dp) / (R * T_c)) / 1000
-        dme = ((p * (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) + adiabaticAnalysis[i,3] * dp) / (R * T_h)) / 1000
+        dm_com = ((p * (adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2]) + adiabaticAnalysis[i,2] * dp) / (R * T_com)) / 1000
+        dm_exp = ((p * (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) + adiabaticAnalysis[i,3] * dp) / (R * T_exp)) / 1000
         dmk = mk * dp / p
-        dmr = mr * dp / p
+        dm_reg = m_reg * dp / p
         dmh = mh * dp / p
         
-        dTc = T_c * (dp / p + (adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2]) / adiabaticAnalysis[i,2] - dmc / mc)
-        dTh = T_h * (dp / p + (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) / adiabaticAnalysis[i,3] - dme / me)
+        dT_com = T_com * (dp / p + (adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2]) / adiabaticAnalysis[i,2] - dm_com / m_com)
+        dT_exp = T_exp * (dp / p + (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) / adiabaticAnalysis[i,3] - dm_exp / m_exp)
         
-        T_c += dTc
-        T_h += dTh
+        T_com += dT_com
+        T_exp += dT_exp
         
-        dWc = p * (adiabaticAnalysis[i, 2] - adiabaticAnalysis[i-1, 2]) / 1000
-        dWe = p * (adiabaticAnalysis[i, 3] - adiabaticAnalysis[i-1, 3]) / 1000
-        dW = dWc + dWe
+        dW_com = p * (adiabaticAnalysis[i, 2] - adiabaticAnalysis[i-1, 2]) / 1000
+        dW_exp = p * (adiabaticAnalysis[i, 3] - adiabaticAnalysis[i-1, 3]) / 1000
+        dW = dW_com + dW_exp
         
         adiabaticAnalysis[i, 7] = p
-        adiabaticAnalysis[i, 8] = dWc
-        adiabaticAnalysis[i, 9] = dWe
+        adiabaticAnalysis[i, 8] = dW_com
+        adiabaticAnalysis[i, 9] = dW_exp
         adiabaticAnalysis[i, 10] = dW
         adiabaticAnalysis[i, 11] = p * values["aPiston"]
         

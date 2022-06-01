@@ -20,13 +20,13 @@
     ],
     "temperature": [
         {
-            "heater": 100.0
+            "expansion": 100.0
         },
         {
             "regenerator": 50.0
         },
         {
-            "cooler": 0.0
+            "compression": 0.0
         }
     ],
     "additional": [

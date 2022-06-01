@@ -76,3 +76,19 @@ Possible features:
     - Set size-parameters of animation from the given input-data
     - Synchronize animation and data plotting
     - Set custom degree-stepsize when calculating results (e.g. 1-15 degrees)
+
+
+1. Remove 'Notes.txt'
+2. Add documentation for each method
+3. Improve input-checking OR describe it in the 'Discussion'-chapter
+4. Add a graph for Q?
+5. Add explanation for why only graphs for the Schmidt analysis are shown in the program
+6. Add explanation to 'Manual input'-window regarding advanced options / settings such as cp and 
+7. Remove P1 and P2 from adiabatic analysis
+8. Search and replace T_C with T_K. Maybe T_H with T_E? CHANGE IN 'MANUAL INPUT'-WINDOW!
+    - Remove heater and cooler from list of nomenclature
+9. Make executable which require no dependencies
+   - Check on another computer
+10. Push final version to GitHub
+11?. Add ReadMe if time
+12?. Combined plots in the main program?
