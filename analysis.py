@@ -13,14 +13,14 @@ from matplotlib.backends.backend_pdf import PdfPages
 def schmidtAnalysis(values):
     """
     Performs a Schmidt-analysis and returns a matrix containing the results of the analysis.
-    Input: 'values' List of values used for calculation [R, m, Texp_c, Treg_c, Tcom_c, V_cyl, V_reg, V_com_avg, piston_rod_area, piston_cyl_area, phaseAngle_beta]
+    Input: 'values' List of values used for calculation [R, m, Texp_c, Treg_c, Tcom_c, V_cyl, V_reg, V_avg, piston_rod_area, piston_cyl_area, phaseAngle_beta]
     Output: 'cycleAnalysis' Matrix of results
     """
     # Constants
     R = values["gasconstant"]   # [J/kg*K]
     m = values["mass"]   # [kg]
 
-    ## Temperature
+    # Temperature
     Texp_c = values["tExpansion"]    # [C]
     Treg_c = values["tRegenerator"]    # [C]
     Tcom_c = values["tCompression"]    # [C]
@@ -28,12 +28,12 @@ def schmidtAnalysis(values):
     T_reg = 273.15 + Treg_c     # [K]
     T_com = 273.15 + Tcom_c     # [K]
 
-    ## Volume
+    # Volume
     V_cyl = values["vSwept"]       # [mm^3]
     V_reg = values["vRegenerator"]       # [mm^3]
-    V_com_avg = values["vAverage"]     # [mm^3]
+    V_avg = values["vAverage"]     # [mm^3]
 
-    ## Area
+    # Area
     piston_rod_area = values["aPiston"]  # [mm^2]
     piston_cyl_area = values["aCylinder"]  # [mm^2]
 
@@ -48,9 +48,9 @@ def schmidtAnalysis(values):
         cycleAnalysis[i,0] = degree         # [degrees]
         rad = degree * 2 * np.pi / 360
         cycleAnalysis[i,1] = rad            # [rad]
-        V_com = V_com_avg + np.sin(rad) * V_cyl / 2
+        V_com = V_avg + np.sin(rad) * V_cyl / 2
         cycleAnalysis[i,2] = V_com            # [mm^3]
-        V_exp = V_com_avg + np.sin(rad + beta_rad) * V_cyl / 2
+        V_exp = V_avg + np.sin(rad + beta_rad) * V_cyl / 2
         cycleAnalysis[i,3] = V_exp            # [mm^3]
         V_tot = (V_com + V_exp) / 1000000
         cycleAnalysis[i,4] = V_tot            # [dm^3]
@@ -183,7 +183,7 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
 
     pdfPages.close()
     
-def createSchmidtPlots(window, cycleAnalysis):
+def createInternalSchmidtPlots(window, cycleAnalysis):
     """Generates plots from results of the Schmidt-analysis which are used in the main window.
 
     Args:
@@ -315,15 +315,18 @@ def adiabaticAnalysis(values, schmidtResults):
     
     # Name columns in csv-file!
     
-    adiabaticAnalysis = np.zeros((37, 12))
+    adiabaticAnalysis = np.zeros((37, 14))
     
+    # Results from Schmidt analysis
     adiabaticAnalysis[:, 0:2] = schmidtResults[:, 0:2]  # Degree, radian
     adiabaticAnalysis[:, 2:5] = schmidtResults[:, 2:5]  # V_c, V_e, V_t
     adiabaticAnalysis[:, 5:7] = schmidtResults[:, 6:8]  # P1, P2
     
+    # Constants
     R = values["gasconstant"]   # [J/kg*K]
     m = values["mass"]   # [kg]
     
+    # Temperature
     Texp_c = values["tExpansion"]    # [C]
     Treg_c = values["tRegenerator"]    # [C]
     Tcom_c = values["tCompression"]    # [C]
@@ -331,15 +334,24 @@ def adiabaticAnalysis(values, schmidtResults):
     T_reg = 273.15 + Treg_c     # [K]
     T_com = 273.15 + Tcom_c     # [K]
     
+    # Volume
+    V_cyl = values["vSwept"]       # [mm^3]
+    V_reg = values["vRegenerator"]       # [mm^3]
+    V_avg = values["vAverage"]     # [mm^3]
+    
+    ## Area
+    piston_rod_area = values["aPiston"]  # [mm^2]
+    piston_cyl_area = values["aCylinder"]  # [mm^2]
+    
     for i in range(1,37):
         T_reg = (T_exp - T_com) / math.log(T_exp - T_com)
         
-        p = m * R * 1000 / (adiabaticAnalysis[i, 2] / T_exp + values["vRegenerator"] / T_reg + adiabaticAnalysis[i, 3] / T_com)
-        dp = p * ((adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2])/ T_com + (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) / T_exp) / (adiabaticAnalysis[i, 2] / T_exp + values["vRegenerator"] / T_reg + adiabaticAnalysis[i, 3] / T_com)
+        p = m * R * 1000 / (adiabaticAnalysis[i, 2] / T_exp + V_reg / T_reg + adiabaticAnalysis[i, 3] / T_com)
+        dp = p * ((adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2])/ T_com + (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) / T_exp) / (adiabaticAnalysis[i, 2] / T_exp + V_reg / T_reg + adiabaticAnalysis[i, 3] / T_com)
         
         m_com = (p * adiabaticAnalysis[i,2] / (R * T_com)) / 1000
         mk = 0
-        m_reg = (p * values["vRegenerator"] / (R * T_reg)) / 1000
+        m_reg = (p * V_reg / (R * T_reg)) / 1000
         mh = 0
         m_exp = (p * adiabaticAnalysis[i,3] / (R * T_exp)) / 1000
         
@@ -363,7 +375,9 @@ def adiabaticAnalysis(values, schmidtResults):
         adiabaticAnalysis[i, 8] = dW_com
         adiabaticAnalysis[i, 9] = dW_exp
         adiabaticAnalysis[i, 10] = dW
-        adiabaticAnalysis[i, 11] = p * values["aPiston"]
+        adiabaticAnalysis[i, 11] = p * piston_cyl_area
+        adiabaticAnalysis[i, 12] = p * (piston_cyl_area - piston_rod_area)
+        adiabaticAnalysis[i, 13] = adiabaticAnalysis[i, 11] - adiabaticAnalysis[i, 12]
         
     return adiabaticAnalysis
         
@@ -434,13 +448,31 @@ def plotAdiabaticAnalysis(resultFileName, cycleAnalysis):
     plt.ylim(-20, 20)
     plt.grid()
     plt.legend()
+    
+    pdfPages.savefig()
+    
+    # Plot piston forces
+    plt.figure()
+    plt.clf()
+    
+    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,11] / 1000, color='b', label="F_O")
+    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,12] / 1000, color='r', label="F_U")
+    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,13] / 1000, color='g', label="F_R")
+
+    plt.xticks(np.arange(0, 390, 30))
+    plt.xlabel("Degrees")
+    plt.yticks(np.arange(-500, 1750, 250))
+    plt.ylabel("Force [kN]")
+    plt.title("Force variation")
+    plt.margins(x=0)
+    plt.xlim(0, 360)
+    plt.ylim(-500, 1500)
+    plt.grid()
+    plt.legend()
 
     pdfPages.savefig()
 
     pdfPages.close()
-    
-def createAdiabaticPlots(window, cycleAnalysis):
-    print()
 #endregion
 
 #region Combined plots
@@ -519,6 +551,31 @@ def plotCombinedAnalysis(resultFileName, schmidtResults, adiabaticResults):
     plt.margins(x=0)
     plt.xlim(0, 360)
     plt.ylim(-20, 20)
+    plt.grid()
+    plt.legend()
+
+    pdfPages.savefig()
+    
+    # Plot piston forces
+    plt.figure()
+    plt.clf()
+
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,11] / 1000, color='darkviolet', label="Schmidt: F_O")
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,12] / 1000, color='b', label="Schmidt: F_U")
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,13] / 1000, color='cyan', label="Schmidt: F_R")
+    
+    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,11] / 1000, color='r', label="Adiabatic: F_O")
+    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,12] / 1000, color='darkorange', label="Adiabatic: F_U")
+    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,13] / 1000, color='y', label="Adiabatic: F_R")
+
+    plt.xticks(np.arange(0, 390, 30))
+    plt.xlabel("Degrees")
+    plt.yticks(np.arange(-500, 1750, 250))
+    plt.ylabel("Force [kN]")
+    plt.title("Force variation")
+    plt.margins(x=0)
+    plt.xlim(0, 360)
+    plt.ylim(-500, 1500)
     plt.grid()
     plt.legend()
 

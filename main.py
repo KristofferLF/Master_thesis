@@ -380,7 +380,7 @@ class StateWindow(QDialog):
         self.plotMarkers = []
         print(self.plotMarkers)
         
-        createSchmidtPlots(self, self.schmidtAnalysis)
+        createInternalSchmidtPlots(self, self.schmidtAnalysis)
         
         self.canvas.setFocusPolicy(QtCore.Qt.NoFocus)
         
