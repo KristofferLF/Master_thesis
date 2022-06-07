@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 # noinspection PyUnresolvedReferences
-import PyQt5
 import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
-import time
 import math
 import vtkmodules.vtkRenderingOpenGL2
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -18,12 +16,13 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderWindowInteractor,
     vtkRenderer
 )
-from PyQt5.QtCore import QUrl, QTimer, QObject, pyqtSignal, pyqtProperty
-
 
 class StirlingAnimation():
     
-    def __init__(self, parent=None):
+    def __init__(self):
+        """Initialization-function for the 'StirlingAnimation'-class.
+        """
+        
         self.offsetCenterAxis = 195
         self.flywheelHorizontalCenter = 225
         self.flywheelVerticalCenter = 675
@@ -103,16 +102,16 @@ class StirlingAnimation():
         regeneratorFaces = [(0, 1, 2, 3), (3, 4, 5, 6), (7, 2, 8, 9)]
         
         for face in cylinderFaces:
-            cylinderFace.InsertNextCell(self.mkVtkIdList(face))
+            cylinderFace.InsertNextCell(self.createVTKIdList(face))
             
         for face in leftPistonFaces:
-            leftPistonFace.InsertNextCell(self.mkVtkIdList(face))
+            leftPistonFace.InsertNextCell(self.createVTKIdList(face))
             
         for face in rightPistonFaces:
-            rightPistonFace.InsertNextCell(self.mkVtkIdList(face))
+            rightPistonFace.InsertNextCell(self.createVTKIdList(face))
         
         for face in regeneratorFaces:
-            regeneratorFace.InsertNextCell(self.mkVtkIdList(face))
+            regeneratorFace.InsertNextCell(self.createVTKIdList(face))
         
         regeneratorColors = vtkUnsignedCharArray()
         regeneratorColors.SetNumberOfComponents(3)
@@ -269,70 +268,110 @@ class StirlingAnimation():
         self.renderWindow.SetSize(450, 800)
         self.renderer.SetBackground(colors.GetColor3d('White'))
         self.renderWindow.SetWindowName('Animation of Stirling Engine')
-
-        #self.renderWindowInteractor.Initialize()
-
-        # Render and interact
-        #self.renderWindow.Render()
-        
-        # TODO Remove 'While'-loop and place it outside the function
-        # TODO Add input-values for 'degree' / 'degree' and potentially other values.
-        # TODO Add descriptions and documentation
-        
-        # w2if = vtkWindowToImageFilter()
-        # w2if.SetInput(renderWindow)
-        # w2if.Update()
-        # writer = vtkPNGWriter()
-        # writer.SetFileName('TestActor2D.png')
-        # writer.SetInputConnection(w2if.GetOutputPort())
-        # writer.Write()
-        
-        # TODO Needed to display a single image. Maybe use 'start' and 'stop' to show?
-        # Eventually just animate a single frame with a long sleep-function
-        #self.renderWindowInteractor.Start()
         
     def animateStep(self, degree):
-            self.leftPistonActor.SetPosition([0, self.calculateHeight(degree)])
-            self.rightPistonActor.SetPosition([0, - self.calculateHeight(degree)])
-            
-            # TODO Add preloading of the next mapper and save it for hotswap
-            self.expansionVolumeActor.SetMapper(self.generateExpansionVolumeMapper(self.calculateHeight(degree) + 1, self.calculateColorScale(degree)))
-            self.compressionVolumeActor.SetMapper(self.generateCompressionVolumeMapper(- self.calculateHeight(degree) + 1, self.calculateColorScale(-degree)))
-            
-            self.expansionPistonAnchorActor.SetMapper(self.generateExpansionPistonAnchorMapper(degree))
-            self.compressionPistonAnchorActor.SetMapper(self.generateCompressionPistonAnchorMapper(degree))
-            
-            self.expansionPistonRodActor.SetMapper(self.generateExpansionPistonRodMapper(degree))
-            self.compressionPistonRodActor.SetMapper(self.generateCompressionPistonRodMapper(degree))
-            
-            self.renderWindow.Render()
+        """Sets the positions and mappers for each item in the VTK-animation.
+
+        Args:
+            degree (int): Number of degrees to set the item.
+        """
+        
+        self.leftPistonActor.SetPosition([0, self.calculateHeight(degree)])
+        self.rightPistonActor.SetPosition([0, - self.calculateHeight(degree)])
+        
+        self.expansionVolumeActor.SetMapper(self.generateExpansionVolumeMapper(self.calculateHeight(degree) + 1, self.calculateColorScale(degree)))
+        self.compressionVolumeActor.SetMapper(self.generateCompressionVolumeMapper(- self.calculateHeight(degree) + 1, self.calculateColorScale(-degree)))
+        
+        self.expansionPistonAnchorActor.SetMapper(self.generateExpansionPistonAnchorMapper(degree))
+        self.compressionPistonAnchorActor.SetMapper(self.generateCompressionPistonAnchorMapper(degree))
+        
+        self.expansionPistonRodActor.SetMapper(self.generateExpansionPistonRodMapper(degree))
+        self.compressionPistonRodActor.SetMapper(self.generateCompressionPistonRodMapper(degree))
+        
+        self.renderWindow.Render()
     
-    def mkVtkIdList(self, it):
+    def createVTKIdList(self, it):
+        """Generates a VTK ID list using an iterable.
+
+        Args:
+            it (iterable): Python iterable.
+
+        Returns:
+            vtkmodules.vtkCommonCore.vtkIdList: VTK ID list containing the indices of the input.
         """
-        :param it: A python iterable.
-        :return: A vtkIdList
-        """
+        
         vtkIdL = vtkIdList()
         for i in it:
             vtkIdL.InsertNextId(int(i))
         return vtkIdL
         
+#region Calculate position
     def calculateHeight(self, degree):
+        """Calculates the height for the pistons as a function of the number of degrees.
+
+        Args:
+            degree (int): Number of degrees to set the item.
+
+        Returns:
+            Float: Height of the pistons as number of pixels.
+        """
+        
         return math.sin(degree * (2 * math.pi / 360)) * 75
 
     def calculateColorScale(self, degree):
+        """Calculates the color scaling factor for the cylinder temperatures as a function of the number of degrees.
+
+        Args:
+            degree (Int): Number of degrees to set the item.
+
+        Returns:
+            Float: Color scaling factor for the cylinder temperatures.
+        """
+        
         return (math.sin(degree * (2 * math.pi / 360)) + 1) * 0.5
 
     def calculateHorizontalMovement(self, degree, phaseShift = 0):
+        """Calculates the horizontal movement for the piston rod anchor as a function of the number of degrees.
+
+        Args:
+            degree (int): Number of degrees to set the item.
+            phaseShift (int, optional): Phase shift as number of degrees. Defaults to 0.
+
+        Returns:
+            Float: Horizontal movement of the piston rod anchor as number of pixels.
+        """
+        
         return math.cos((degree + phaseShift) * (2 * math.pi / 360)) * 85
         
     def calculateVerticalMovement(self, degree, phaseShift = 0):
+        """Calculates the vertical movement for the piston rod anchor as a function of the number of degrees.
+
+        Args:
+            degree (int): Number of degrees to set the item.
+            phaseShift (int, optional): Phase shift as number of degrees. Defaults to 0.
+
+        Returns:
+            Float: Vertical movement of the piston rod anchor as number of pixels.
+        """
+        
         if (math.sin(degree * 2 * math.pi / 360) < 0):
             return - math.sqrt(85 ** 2 - self.calculateHorizontalMovement(degree, phaseShift) ** 2)
         else:
             return math.sqrt(85 ** 2 - self.calculateHorizontalMovement(degree, phaseShift) ** 2)
+#endregion
 
+#region Create mappers
     def generateExpansionVolumeMapper(self, expansionVolumeHeight, colorScale):
+        """Creates a mapper for the expansion volume as a function of the number of degrees.
+
+        Args:
+            expansionVolumeHeight (float): The height of the piston in the expansion chamber.
+            colorScale (float): The color scaling factor for the expansion volume.
+
+        Returns:
+            vtkmodules.vtkRenderingCore.vtkPolyDataMapper2D: Mapper for the expansion volume.
+        """
+        
         expansionVolumePoints = vtkPoints()
         
         expansionVolumeVertices = [(10, 110, 0), (190, 110, 0), (190, expansionVolumeHeight + self.offsetCenterAxis, 0),
@@ -345,7 +384,7 @@ class StirlingAnimation():
         expansionVolumeFaces = [(0, 1, 2, 3)]
         
         for face in expansionVolumeFaces:
-            expansionVolumeFace.InsertNextCell(self.mkVtkIdList(face))
+            expansionVolumeFace.InsertNextCell(self.createVTKIdList(face))
             
         expansionColors = vtkUnsignedCharArray()
         expansionColors.SetNumberOfComponents(3)
@@ -367,6 +406,16 @@ class StirlingAnimation():
         return expansionVolumeMapper
         
     def generateCompressionVolumeMapper(self, compressionVolumeHeight, colorScale):
+        """Creates a mapper for the compression volume as a function of the number of degrees.
+
+        Args:
+            compressionVolumeHeight (float): The height of the piston in the compression chamber.
+            colorScale (float): The color scaling factor for the compression volume.
+
+        Returns:
+            vtkmodules.vtkRenderingCore.vtkPolyDataMapper2D: Mapper for the compression volume
+        """
+        
         compressionVolumePoints = vtkPoints()
         
         compressionVolumeVertices = [(260, 110, 0), (440, 110, 0), (440, compressionVolumeHeight + self.offsetCenterAxis, 0),
@@ -379,7 +428,7 @@ class StirlingAnimation():
         compressionVolumeFaces = [(0, 1, 2, 3)]
         
         for face in compressionVolumeFaces:
-            compressionVolumeFace.InsertNextCell(self.mkVtkIdList(face))
+            compressionVolumeFace.InsertNextCell(self.createVTKIdList(face))
             
         compressionColors = vtkUnsignedCharArray()
         compressionColors.SetNumberOfComponents(3)
@@ -401,6 +450,15 @@ class StirlingAnimation():
         return compressionVolumeMapper
 
     def generateExpansionPistonAnchorMapper(self, degree):
+        """Creates a mapper for the expansion volume's piston rod anchor as a function of the number of degrees.
+
+        Args:
+            degree (int): Number of degrees to set the item.
+
+        Returns:
+            vtkmodules.vtkRenderingCore.vtkPolyDataMapper2D: Mapper for the expansion volume's piston rod anchor.
+        """
+        
         expansionPistonAnchorSource = vtkRegularPolygonSource()
         expansionPistonAnchorSource.SetNumberOfSides(50)
         expansionPistonAnchorSource.SetRadius(15.0)
@@ -413,6 +471,15 @@ class StirlingAnimation():
         return expansionPistonAnchorMapper
 
     def generateCompressionPistonAnchorMapper(self, degree):
+        """Creates a mapper for the compression volume's piston rod anchor as a function of the number of degrees.
+
+        Args:
+            degree (int): Number of degrees to set the item.
+
+        Returns:
+            vtkmodules.vtkRenderingCore.vtkPolyDataMapper2D: Mapper for the compression volume's piston rod anchor.
+        """
+        
         compressionPistonAnchorSource = vtkRegularPolygonSource()
         compressionPistonAnchorSource.SetNumberOfSides(50)
         compressionPistonAnchorSource.SetRadius(15.0)
@@ -424,6 +491,15 @@ class StirlingAnimation():
         return compressionPistonAnchorMapper
 
     def generateExpansionPistonRodMapper(self, degree):
+        """Creates a mapper for the expansion volume's piston rod as a function of the number of degrees.
+
+        Args:
+            degree (int): Number of degrees to set the item.
+
+        Returns:
+            vtkmodules.vtkRenderingCore.vtkPolyDataMapper2D: Mapper for the expansion volume's piston rod.
+        """
+        
         expansionPistonRodPoints = vtkPoints()
         
         expansionPistonRodVertices = [(90, self.calculateHeight(degree) + self.pistonHeight - 1, 1), (110, self.calculateHeight(degree) + self.pistonHeight - 1, 1),
@@ -437,7 +513,7 @@ class StirlingAnimation():
         expansionPistonRodFaces = [(0, 1, 2, 3)]
         
         for face in expansionPistonRodFaces:
-            expansionPistonRodFace.InsertNextCell(self.mkVtkIdList(face))
+            expansionPistonRodFace.InsertNextCell(self.createVTKIdList(face))
         
         expansionPistonRodPolydata = vtkPolyData()
         expansionPistonRodPolydata.SetPoints(expansionPistonRodPoints)
@@ -450,6 +526,15 @@ class StirlingAnimation():
         return expansionPistonRodMapper
 
     def generateCompressionPistonRodMapper(self, degree):
+        """Creates a mapper for the compression volume's piston rod as a function of the number of degrees.
+
+        Args:
+            degree (int): Number of degrees to set the item.
+
+        Returns:
+            vtkmodules.vtkRenderingCore.vtkPolyDataMapper2D: Mapper for the compression volume's piston rod.
+        """
+        
         compressionPistonRodPoints = vtkPoints()
         
         compressionPistonRodVertices = [(340, - self.calculateHeight(degree) + self.pistonHeight - 1, 1), (360, - self.calculateHeight(degree) + self.pistonHeight - 1, 1),
@@ -463,7 +548,7 @@ class StirlingAnimation():
         compressionPistonRodFaces = [(0, 1, 2, 3)]
         
         for face in compressionPistonRodFaces:
-            compressionPistonRodFace.InsertNextCell(self.mkVtkIdList(face))
+            compressionPistonRodFace.InsertNextCell(self.createVTKIdList(face))
         
         compressionPistonRodPolydata = vtkPolyData()
         compressionPistonRodPolydata.SetPoints(compressionPistonRodPoints)
@@ -474,8 +559,15 @@ class StirlingAnimation():
         compressionPistonRodMapper.Update()
         
         return compressionPistonRodMapper
-    
+#endregion
+
     def getActors(self):
+        """Creates a list of the actors in the animation.
+
+        Returns:
+            List[vtkmodules.vtkRenderingCore.vtkActor2D]: List of actors.
+        """
+        
         actorList = []
         
         actorList.append(self.cylinderActor)
@@ -495,84 +587,10 @@ class StirlingAnimation():
         return actorList
     
     def getRenderer(self):
-        return self.renderer
-    
-class LeftPiston(QObject):
-    
-    valueChanged = pyqtSignal(int)
-    
-    def __init__(self):
-        super().__init__()
-        self._mapper = 0
-    
-    @pyqtProperty(int)
-    def mapper(self):
-        return self._mapper
-    
-    @mapper.setter
-    def mapper(self, mapper):
-        if (mapper != self._mapper):
-            self._mapper = mapper
-            self.valueChanged.emit(mapper)
-    
-class ActorTroup(QObject):
-    
-    valueChanged = pyqtSignal(int)
-    
-    def __init__(self):
-        super().__init__()
-        self._degree = 0
-        
-        self.stirlingAnimation = StirlingAnimation()
-        
-        actorList = self.stirlingAnimation.getActors()
-        
-        self.cylinderActor = actorList[0]
-        self.leftPistonActor = actorList[1]
-        self.rightPistonActor = actorList[2]
-        self.expansionVolumeActor = actorList[3]
-        self.compressionVolumeActor = actorList[4]
-        self.regeneratorActor = actorList[5]
-        self.flywheelActor = actorList[6]
-        self.flywheelCenterActor = actorList[7]
-        self.flywheelCenterRadiusActor = actorList[8]
-        self.expansionPistonRodActor = actorList[9]
-        self.expansionPistonAnchorActor = actorList[10]
-        self.compressionPistonRodActor = actorList[11]
-        self.compressionPistonAnchorActor = actorList[12]
-    
-    @pyqtProperty(int)
-    def degree(self):
-        return self._degree
-    
-    @degree.setter
-    def degree(self, degree):
-        if (degree != self._degree):
-            self._degree = degree
-            self.updateActors(degree)
-            self.valueChanged.emit(degree)
-            
-    def updateActors(self, degree):
-        self.leftPistonActor.SetPosition([0, self.stirlingAnimation.calculateHeight(degree)])
-        self.rightPistonActor.SetPosition([0, - self.stirlingAnimation.calculateHeight(degree)])
-        
-        self.expansionVolumeActor.SetMapper(self.stirlingAnimation.generateExpansionVolumeMapper(self.stirlingAnimation.calculateHeight(degree) + 1, self.stirlingAnimation.calculateColorScale(degree)))
-        self.compressionVolumeActor.SetMapper(self.stirlingAnimation.generateCompressionVolumeMapper(- self.stirlingAnimation.calculateHeight(degree) + 1, self.stirlingAnimation.calculateColorScale(-degree)))
-        
-        self.expansionPistonAnchorActor.SetMapper(self.stirlingAnimation.generateExpansionPistonAnchorMapper(degree))
-        self.compressionPistonAnchorActor.SetMapper(self.stirlingAnimation.generateCompressionPistonAnchorMapper(degree))
-        
-        self.expansionPistonRodActor.SetMapper(self.stirlingAnimation.generateExpansionPistonRodMapper(degree))
-        self.compressionPistonRodActor.SetMapper(self.stirlingAnimation.generateCompressionPistonRodMapper(degree))
-        
-        print("Degree: " + str(degree))
+        """Returns the animation's renderer.
 
-if __name__ == '__main__':
-    stirlingClass = StirlingAnimation()
-    degree = 0
-    maxStep = 1080
-    
-    while (degree < maxStep):
-        time.sleep(0.015)
-        stirlingClass.animateStep(degree)
-        degree += 1
+        Returns:
+            vtkmodules.vtkRenderingCore.vtkRenderer: The animation's renderer.
+        """
+        
+        return self.renderer

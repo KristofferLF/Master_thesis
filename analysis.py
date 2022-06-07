@@ -1,9 +1,5 @@
 import math
 import os
-import random
-from turtle import color, width
-from matplotlib.axis import XAxis
-from matplotlib.lines import Line2D
 import numpy as np
 import matplotlib.pyplot as plt
 import pyqtgraph as pg
@@ -11,11 +7,15 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 #region Schmidt analysis
 def schmidtAnalysis(values):
+    """Performs a Schmidt analysis using input-values from the user.
+
+    Args:
+        values (Dictionary): Dictionary containing the input-values collected from the user.
+
+    Returns:
+        NumPy.array['Float']: Numpy array containing results from the Schmidt analysis.
     """
-    Performs a Schmidt-analysis and returns a matrix containing the results of the analysis.
-    Input: 'values' List of values used for calculation [R, m, Texp_c, Treg_c, Tcom_c, V_cyl, V_reg, V_avg, piston_rod_area, piston_cyl_area, phaseAngle_beta]
-    Output: 'cycleAnalysis' Matrix of results
-    """
+    
     # Constants
     R = values["gasconstant"]   # [J/kg*K]
     m = values["mass"]   # [kg]
@@ -88,11 +88,12 @@ def schmidtAnalysis(values):
     return cycleAnalysis
 
 def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
-    '''
-    Plots results from a Schmidt-analysis. Volume, pressure, mechanical work, and forces are plotted against the number of degrees for one Stirling cycle.
-    Input: 'resultFileName' String containing the desired path for a PDF containing the plots. Must not include path or '.pdf'.
-    'cycleAnalysis' Numpy array containing calculated results from the Schmidt-analysis.
-    '''
+    """Generates plots from the results of the Schmidt analysis and saves them as a PDF-file.
+
+    Args:
+        resultFileName (String): The filename to be given to the PDF-file where the plots are saved.
+        cycleAnalysis (NumPy.array['Float']): Numpy array containing results from the Schmidt analysis.
+    """
 
     # Removes result-file if it exists
     if os.path.exists("results/" + resultFileName + ".pdf"):
@@ -184,11 +185,11 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
     pdfPages.close()
     
 def createInternalSchmidtPlots(window, cycleAnalysis):
-    """Generates plots from results of the Schmidt-analysis which are used in the main window.
+    """Generates plots from results of the Schmidt-analysis which are used in the GUI.
 
     Args:
-        window (pyqt.QObject): The 'main-window'-object
-        cycleAnalysis (numpy.array): A numpy-array containing the results from the Schmidt-analysis
+        window (pyqt.QObject): The 'main-window'-object that displays the plots.
+        cycleAnalysis (NumPy.array['Float']): Numpy array containing results from the Schmidt analysis.
     """
     
     # Set spacing of values along the x-axis
@@ -306,14 +307,15 @@ def createInternalSchmidtPlots(window, cycleAnalysis):
     
 #region Adiabatic analysis
 def adiabaticAnalysis(values, schmidtResults):
-    # Single values: p, mc, mk, mr, mh, me, W
-    
-    # Array: Degrees, radians, dmc, dme, dmk, dmr, dmh, dQk, dQr, dQh, dWc, dWe, dW
-    
-    # Expand original csv-file to include adiabatic and simple analysis?
-    # Reuse values as much as possible or make it readable? Performance vs readability
-    
-    # Name columns in csv-file!
+    """Performs an adiabatic analysis using input-values from the user and the computed results of a Schmidt analysis.
+
+    Args:
+        values (Dictionary): Dictionary containing the input-values collected from the user.
+        schmidtResults (NumPy.array['Float']): Numpy array containing the results obtained from a Schmidt analysis.
+
+    Returns:
+        NumPy.array['Float']: Numpy array containing results from the adiabatic analysis.
+    """
     
     adiabaticAnalysis = np.zeros((37, 14))
     
@@ -325,6 +327,8 @@ def adiabaticAnalysis(values, schmidtResults):
     # Constants
     R = values["gasconstant"]   # [J/kg*K]
     m = values["mass"]   # [kg]
+    cv = values["constant_volume_heat_capacity"]
+    cp = values["constant_pressure_heat_capacity"]
     
     # Temperature
     Texp_c = values["tExpansion"]    # [C]
@@ -346,6 +350,7 @@ def adiabaticAnalysis(values, schmidtResults):
     for i in range(1,37):
         T_reg = (T_exp - T_com) / math.log(T_exp - T_com)
         
+        # Pressure
         p = m * R * 1000 / (adiabaticAnalysis[i, 2] / T_exp + V_reg / T_reg + adiabaticAnalysis[i, 3] / T_com)
         dp = p * ((adiabaticAnalysis[i,2] - adiabaticAnalysis[i-1,2])/ T_com + (adiabaticAnalysis[i,3] - adiabaticAnalysis[i-1,3]) / T_exp) / (adiabaticAnalysis[i, 2] / T_exp + V_reg / T_reg + adiabaticAnalysis[i, 3] / T_com)
         
@@ -367,26 +372,33 @@ def adiabaticAnalysis(values, schmidtResults):
         T_com += dT_com
         T_exp += dT_exp
         
+        # Mechanical work
         dW_com = p * (adiabaticAnalysis[i, 2] - adiabaticAnalysis[i-1, 2]) / 1000
         dW_exp = p * (adiabaticAnalysis[i, 3] - adiabaticAnalysis[i-1, 3]) / 1000
         dW = dW_com + dW_exp
+        
+        # Piston force
+        F_O = p * piston_cyl_area
+        F_U = p * (piston_cyl_area - piston_rod_area)
+        F_R = F_O - F_U
         
         adiabaticAnalysis[i, 7] = p
         adiabaticAnalysis[i, 8] = dW_com
         adiabaticAnalysis[i, 9] = dW_exp
         adiabaticAnalysis[i, 10] = dW
-        adiabaticAnalysis[i, 11] = p * piston_cyl_area
-        adiabaticAnalysis[i, 12] = p * (piston_cyl_area - piston_rod_area)
-        adiabaticAnalysis[i, 13] = adiabaticAnalysis[i, 11] - adiabaticAnalysis[i, 12]
+        adiabaticAnalysis[i, 11] = F_O
+        adiabaticAnalysis[i, 12] = F_U
+        adiabaticAnalysis[i, 13] = F_R
         
     return adiabaticAnalysis
         
 def plotAdiabaticAnalysis(resultFileName, cycleAnalysis):
-    '''
-    Plots results from an  adiabaticanalysis. Volume, pressure, mechanical work, and forces are plotted against the number of degrees for one Stirling cycle.
-    Input: 'resultFileName' String containing the desired path for a PDF containing the plots. Must not include path or '.pdf'.
-    'cycleAnalysis' Numpy array containing calculated results from the adiabatic analysis.
-    '''
+    """Generates plots from the results of the adiabatic analysis and saves them as a PDF-file.
+
+    Args:
+        resultFileName (String): The filename to be given to the PDF-file where the plots are saved.
+        cycleAnalysis (NumPy.array['Float']): Numpy array containing results from the adiabatic analysis.
+    """
 
     # Removes result-file if it exists
     if os.path.exists("results/" + resultFileName + ".pdf"):
@@ -477,12 +489,13 @@ def plotAdiabaticAnalysis(resultFileName, cycleAnalysis):
 
 #region Combined plots
 def plotCombinedAnalysis(resultFileName, schmidtResults, adiabaticResults):
-    '''
-    Plots results from an both schmidt and adiabatic analysis. Volume, pressure, mechanical work, and forces are plotted against the number of degrees for one Stirling cycle.
-    Input: 'resultFileName' String containing the desired path for a PDF containing the plots. Must not include path or '.pdf'.
-    'schmidtResults' Numpy array containing calculated results from the Schmidt analysis.
-    'adiabaticResults' Numpy array containing calculated results from the adiabatic analysis.
-    '''
+    """Generates combined plots from the results of both the Schmidt analysis and the adiabatic analysis, and then saves them as a PDF-file.
+
+    Args:
+        resultFileName (String): _description_
+        schmidtResults (NumPy.array['Float']): Numpy array containing results from the Schmidt analysis.
+        adiabaticResults (NumPy.array['Float']): Numpy array containing results from the adiabatic analysis.
+    """
 
     # Removes result-file if it exists
     if os.path.exists("results/" + resultFileName + ".pdf"):

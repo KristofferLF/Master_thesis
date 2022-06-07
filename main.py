@@ -11,6 +11,14 @@ import pyqtgraph as pg
 import sys
 
 def checkValues(values):
+    """Checks the validity of the given values.
+
+    Args:
+        values (float): Values collected from manual input.
+
+    Returns:
+        Bool: Verdict of whether the values are valid.
+    """
     for value in values:
         if (value is not None and value != ''):
             try:    
@@ -25,7 +33,18 @@ def checkValues(values):
     return True
 
 class Intro(QDialog):
+    """Introductionary window to the program. Presents the user with the options of how to enter the input-data.
+
+    Args:
+        QDialog (PyQt5.QtWidgets.QDialog): Instance to initialize.
+    """
+    
     def __init__(self, parent=None):
+        """Initialization-function for the 'Intro'-class.
+
+        Args:
+            parent (PyQt5.QtWidgets.QDialog, optional): Optional parent of the instance. Defaults to None.
+        """
         super(Intro, self).__init__(parent)
         window = QWidget()
         self.setWindowTitle("Stirling engine calculator")
@@ -75,9 +94,12 @@ class Intro(QDialog):
         self.customButton.clicked.connect(self.useCustomValues)
         self.inputButton.clicked.connect(self.manualInput)
 
-    # Method for navigation
+    #region Methods for navigation
 
     def manualInput(self):
+        """Navigates the user to the 'Manual input'-window.
+        """
+        
         self.manualInput = ManualInput(self)
         self.manualInput.show()
         
@@ -85,29 +107,47 @@ class Intro(QDialog):
             self.hide()
             
     def useDefaultValues(self):
+        """Lets the user use default-values for analysis obtained from JSON-file.
+        """
+        
         values = readFromJSON("assets/default.json")
         
         #isApproved = checkValues(values)
 
         if (True):
             writeToJSON("inputValues", values)
-            self.stateVisualization = StateWindow(self)
+            self.stateVisualization = VisualizationWindow(self)
             self.stateVisualization.show()
             self.hide()
             
     def useCustomValues(self):
+        """Lets the user use custom values for analysis obtained from JSON-file.
+        """
         values = readFromJSON("assets/custom.json")
         
         isApproved = checkValues(values)
 
         if (isApproved):
             writeToJSON("inputValues", values)
-            self.stateVisualization = StateWindow(self)
+            self.stateVisualization = VisualizationWindow(self)
             self.stateVisualization.show()
             self.hide()
-
+    #endregion
+    
 class ManualInput(QDialog):
+    """Presents the user with and gathers the required input-values to perform the analysis.
+
+    Args:
+        QDialog (PyQt5.QtWidgets.QDialog): Instance to initialize.
+    """
+    
     def __init__(self, parent=None):
+        """Initialization-function for the 'ManualInput'-class.
+
+        Args:
+            parent (PyQt5.QtWidgets.QDialog, optional): Optional parent of the instance. Defaults to None.
+        """
+        
         super(ManualInput, self).__init__(parent)
         window = QWidget()
         self.setWindowTitle("Manual input")
@@ -229,14 +269,21 @@ class ManualInput(QDialog):
         
         # Connect buttons
         self.returnButton.clicked.connect(self.returnToIntro)
-        self.continueButton.clicked.connect(self.continueToCalculation)
+        self.continueButton.clicked.connect(self.continueToVisualization)
         
+    #region Methods for navigation
     def returnToIntro(self):
+        """Navigates the user to the 'Intro'-window.
+        """
+        
         self.intro = Intro(self)
         self.intro.show()
         self.hide()
     
-    def continueToCalculation(self):
+    def continueToVisualization(self):
+        """Navigates the user to the 'VisualizationWindow'-window if the input-data is valid.
+        """
+        
         valueList = [self.gas_constant, self.m, self.th, self.tr, self.tc, self.v_cyl, self.v_reg, self.v_c_avg, self.piston_rod_area, self.piston_cyl_area, self.beta]
         values = []
 
@@ -247,20 +294,35 @@ class ManualInput(QDialog):
 
         if (isApproved):
             writeToJSON("inputValues", values)
-            self.stateVisualization = StateWindow(self)
+            self.stateVisualization = VisualizationWindow(self)
             self.stateVisualization.show()
             self.hide()
         else:
             self.manualInput = ManualInput(self)
             self.manualInput.show()
             self.hide()
+    #endregion
 
-class StateWindow(QDialog):
+class VisualizationWindow(QDialog):
+    """Presents the user with a visualization of the results of the analyses, in addition to an animation.
+
+    Args:
+        QDialog (PyQt5.QtWidgets.QDialog): Instance to initialize.
+
+    Returns:
+        Int: The current number of degrees to display in the visualization.
+    """
     
     valueChanged = pyqtSignal(int)
     
     def __init__(self, parent=None):
-        super(StateWindow, self).__init__(parent)
+        """Initialization-function for the 'VisualizationWindow'-class.
+
+        Args:
+            parent (PyQt5.QtWidgets.QDialog, optional): Optional parent of the instance. Defaults to None.
+        """
+        
+        super(VisualizationWindow, self).__init__(parent)
         window = QtOpenGL.QGLWidget()
         self.setWindowTitle("Stirling engine state visualization")
         
@@ -367,9 +429,11 @@ class StateWindow(QDialog):
         self.returnButton.clicked.connect(self.returnToIntro)
         self.continueButton.clicked.connect(self.continueToResults)
         
-        #self.releaseKeyboard()
-        
+    #region Methods for animation
     def createPlots(self):
+        """Creates the plots used for visualization of the results of the analyses.
+        """
+        
         calculationValues = readFromJSON("assets/inputValues.json")
         print("These values were read from the JSON-file containing input-values:")
         print(calculationValues)
@@ -386,10 +450,20 @@ class StateWindow(QDialog):
         
     @pyqtProperty(int)
     def degree(self):
+        """Returns the current number of degrees.
+
+        Returns:
+            Int: Current number of degrees.
+        """
         return self._degree
     
     @degree.setter
     def degree(self, degree):
+        """Sets the current number of degrees and notifies the observers.
+
+        Args:
+            degree (int): Current number of degrees.
+        """
         if (degree != self._degree):
             self._degree = degree
             self.updateValues(self._degree)
@@ -443,38 +517,80 @@ class StateWindow(QDialog):
             marker.setValue(degree)
         
     def playAnimation(self):
+        """Starts or resumes the animation.
+        """
+        
         self.animation.start()
         
     def pauseAnimation(self):
+        """Pauses the animation.
+        """
+        
         self.animation.pause()
     
     def showFrame(self):
+        """Updates the current number of degrees in the spinbox and the animation.
+        """
+        
         self._degree = self.spinBox.value()
         self.updateValues(self._degree)
             
     def getDegree(self):
-        return self._degree
+        """Returns the current number of degrees.
+
+        Returns:
+            Int: Current number of degrees.
+        """
         
+        return self._degree
+    #endregion
+        
+    #region Methods for navigation
     def returnToIntro(self):
+        """Navigates the user to the 'Intro'-window.
+        """
+        
         self.animation.stop()
         self.intro = Intro(self)
         self.intro.show()
         self.hide()
         
     def continueToResults(self):
+        """Navigates the user to the 'Results'-window.
+        """
+        
         self.animation.stop()
         self.results = ResultWindow(self)
         self.results.show()
         self.hide()
+    #endregion
         
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        """Closes the window and its widgets (including animation).
+
+        Args:
+            a0 (QtGui.QCloseEvent): The window's closing event.
+        """
+        
         super().closeEvent(a0)
         self.widget.closeEvent()
         self.canvas.closeEvent()
         self.widget.Finalize()
         
 class ResultWindow(QDialog):
+    """Confirms to the user that the analyses have been completed and shows where the results are stored.
+
+    Args:
+        QDialog (PyQt5.QtWidgets.QDialog): Instance to initialize.
+    """
+    
     def __init__(self, parent=None):
+        """Initialization-function for the 'ResultWindow'-class.
+
+        Args:
+            parent (QDialog, optional): Optional parent of the instance. Defaults to None.
+        """
+        
         super(ResultWindow, self).__init__(parent)
         window = QWidget()
         self.setWindowTitle("Results of analysis")
@@ -554,11 +670,17 @@ class ResultWindow(QDialog):
         self.exitButton.clicked.connect(self.exitApplication)
     
     def returnToStateVisualization(self):
-        self.stateVisualization = StateWindow(self)
+        """Navigates the user to the 'VisualizationWindow'-window.
+        """
+        
+        self.stateVisualization = VisualizationWindow(self)
         self.stateVisualization.show()
         self.hide()
         
     def exitApplication(self):
+        """Exits the application.
+        """
+        
         sys.exit()
 
 if __name__ == '__main__':

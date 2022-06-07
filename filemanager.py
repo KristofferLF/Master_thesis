@@ -2,11 +2,18 @@ import csv
 import json
 import numpy as np
 
+#region JSON
 def readFromJSON(fileName):
-    """
-    Reads files from a JSON-file and returns the values read from the files.
-    Input: 'fileName' String Filename (must be '.csv')
-    Output: 'values' List of values read from the csv-file
+    """Reads the input-values from a JSON-file.
+
+    Args:
+        fileName (string): Filename of the JSON-file.
+
+    Raises:
+        Exception: Could not open file. Ensure filename is correct.
+
+    Returns:
+        Dictionary: The input-values extracted from the JSON-file.
     """
     
     try:    
@@ -36,14 +43,14 @@ def readFromJSON(fileName):
     
     return values
 
-# Remove the possibility to remove 'readFromCSV'?
-
 def writeToJSON(fileName, values):
+    """Writes the values to a JSON-file.
+
+    Args:
+        fileName (string): Filename of the JSON-file to be created.
+        values (Dictionary): Dictionary containing the values to be stored in a JSON-file.
     """
-    Writes a matrix to a JSON-file with the fiven filename.
-    Input: 'fileName' String Filename (does not include '.json')
-    'values' List containing string values from GUI-input
-    """
+    
     try:
         gasConstant = str(values["gasconstant"])
         mass = str(values["mass"])
@@ -80,12 +87,21 @@ def writeToJSON(fileName, values):
             jsonFile.write(jsonString)
     except:
         print("Could not write to file. Ensure proper filename is given.")
+#endregion
 
+#region CSV
 def readFromCSV(fileName):
-    """
-    Reads files from a CSV-file and returns the values read from the files.
-    Input: 'fileName' String Filename (must be '.csv')
-    Output: 'values' List of values read from the csv-file
+    """Read values from a CSV-file and returns them as a list.
+
+    Args:
+        fileName (string): The filename of the CSV-file.
+
+    Raises:
+        Exception: Could not open file. Ensure filename is correct.
+        Exception: Could not read values. Ensure the values are correct and correctly placed.
+
+    Returns:
+        List[float]: List of values.
     """
 
     try:
@@ -105,39 +121,21 @@ def readFromCSV(fileName):
     
     return values
 
-def writeToCSV(fileName, values):
-    """
-    Writes a matrix to a csv-file with the fiven filename.
-    Input: 'fileName' String Filename (does not include '.csv')
-    'values' List containing string values from GUI-input
-    """
+def writeResultsToCSV(fileName, resultArray):
+    """Write results of the analyses to a CSV-file.
 
-    valueArray = np.array(values)
-    titleArray = np.array(["m", "Th", "Tr", "Tc", "V_cyl", "V_reg", "V_c_avg", "piston_rod_area", "piston_cyl_area", "beta"])
+    Args:
+        fileName (string): The filename of the CSV-file.
+        resultArray (NumPy.array[float]): NumPy-array containing the results of the analyses.
 
-    writeArray = np.zeros((10,2), dtype='U20')
-
-    for i in range(len(titleArray)):
-        writeArray[i,0] = titleArray[i]
-        writeArray[i,1] = str(valueArray[i])
-    
-    filePath = "assets/" + fileName + ".csv"
-    
-    try:
-        np.savetxt(filePath, writeArray, delimiter=";", fmt='%s')
-    except:
-        raise Exception("Could not write to file. Ensure the file-name and list of values are correct.")
-
-def writeResultsToCSV(fileName, resultMatrix):
-    """
-    Writes a matrix to a csv-file with the given filename.
-    Input: 'fileName' String containing desired filename for CSV-file containing results from a Schmidt-analysis. Must not include path or '.csv'.
-    'resultMatrix' Numpy array containing results from a Schmidt-analysis
+    Raises:
+        Exception: Could not write to file. Ensure the file-name and array are correct.
     """
     
     filePath = "results/" + fileName + ".csv"
     try:
-        np.savetxt(filePath, resultMatrix, delimiter=";")
+        np.savetxt(filePath, resultArray, delimiter=";")
         print("The results are saved in: " + filePath)
     except:
-        raise Exception("Could not write to file. Ensure the file-name and matrix are correct.")
+        raise Exception("Could not write to file. Ensure the file-name and array are correct.")
+#endregion
