@@ -47,10 +47,10 @@ class Intro(QDialog):
         """
         super(Intro, self).__init__(parent)
         window = QWidget()
-        self.setWindowTitle("Stirling engine calculator")
+        self.setWindowTitle("Stirling engine analysis-program")
         
         # Create widgets
-        self.greeting = QLabel("Welcome to the stirling engine calculator!")
+        self.greeting = QLabel("STIRLING ENGINE ANALYSIS-PROGRAM")
         self.greeting.setAlignment(QtCore.Qt.AlignCenter)
         self.greeting.setFixedSize(750, 50)
         self.greeting.setObjectName("greeting")
