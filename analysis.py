@@ -104,8 +104,8 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
     plt.clf()
 
     # Plot volume variation
-    plt.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color='lightskyblue', label="Expansion volume", zorder=2)
-    plt.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2], color='indianred', label="Compression volume", zorder=3)
+    plt.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color='indianred', label="Expansion volume", zorder=2)
+    plt.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2], color='lightskyblue', label="Compression volume", zorder=3)
     
     plt.xticks(np.arange(0, 390, 30))
     plt.xlabel("Degrees")
@@ -407,8 +407,8 @@ def plotAdiabaticAnalysis(resultFileName, cycleAnalysis):
     plt.clf()
 
     # Plot volume variation
-    plt.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color='lightskyblue', label="Expansion volume", zorder=2)
-    plt.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2], color='indianred', label="Compression volume", zorder=3)
+    plt.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2] + cycleAnalysis[:,3], color='indianred', label="Expansion volume", zorder=2)
+    plt.fill_between(cycleAnalysis[:,0], cycleAnalysis[:,2], color='lightskyblue', label="Compression volume", zorder=3)
     
     plt.xticks(np.arange(0, 390, 30))
     plt.xlabel("Degrees")
@@ -504,8 +504,8 @@ def plotCombinedAnalysis(resultFileName, schmidtResults, adiabaticResults):
     plt.clf()
 
     # Plot volume variation
-    plt.fill_between(schmidtResults[:,0], schmidtResults[:,2] + schmidtResults[:,3], color='lightskyblue', label="Expansion volume", zorder=2)
-    plt.fill_between(schmidtResults[:,0], schmidtResults[:,2], color='indianred', label="Compression volume", zorder=3)
+    plt.fill_between(schmidtResults[:,0], schmidtResults[:,2] + schmidtResults[:,3], color='indianred', label="Expansion volume", zorder=2)
+    plt.fill_between(schmidtResults[:,0], schmidtResults[:,2], color='lightskyblue', label="Compression volume", zorder=3)
     
     plt.xticks(np.arange(0, 390, 30))
     plt.xlabel("Degrees")

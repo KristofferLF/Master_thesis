@@ -19,6 +19,7 @@ def checkValues(values):
     Returns:
         Bool: Verdict of whether the values are valid.
     """
+    
     for value in values:
         if (value is not None and value != ''):
             try:    
