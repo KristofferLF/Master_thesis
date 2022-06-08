@@ -327,8 +327,6 @@ def adiabaticAnalysis(values, schmidtResults):
     # Constants
     R = values["gasconstant"]   # [J/kg*K]
     m = values["mass"]   # [kg]
-    cv = values["constant_volume_heat_capacity"]
-    cp = values["constant_pressure_heat_capacity"]
     
     # Temperature
     Texp_c = values["tExpansion"]    # [C]

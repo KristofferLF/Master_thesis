@@ -176,10 +176,10 @@ class ManualInput(QDialog):
         self.v_reg_prompt.setFixedSize(150, 30)
         self.v_reg = QLineEdit()
         self.v_reg.setFixedSize(150, 30)
-        self.v_c_avg_prompt = QLabel("Cylinder average:")
-        self.v_c_avg_prompt.setFixedSize(150, 30)
-        self.v_c_avg = QLineEdit()
-        self.v_c_avg.setFixedSize(150, 30)
+        self.v_cyl_avg_prompt = QLabel("Cylinder average:")
+        self.v_cyl_avg_prompt.setFixedSize(150, 30)
+        self.v_cyl_avg = QLineEdit()
+        self.v_cyl_avg.setFixedSize(150, 30)
 
         self.area = QLabel("Area [mm^2]")
         self.area.setAlignment(QtCore.Qt.AlignCenter)
@@ -196,30 +196,30 @@ class ManualInput(QDialog):
         self.temperature = QLabel("Temperature [C]")
         self.temperature.setAlignment(QtCore.Qt.AlignCenter)
         self.temperature.setFixedSize(750, 50)
-        self.th_prompt = QLabel("Hot side:")
-        self.th_prompt.setFixedSize(150, 30)
-        self.th = QLineEdit()
-        self.th.setFixedSize(150, 30)
-        self.tr_prompt = QLabel("Regenerator:")
-        self.tr_prompt.setFixedSize(150, 30)
-        self.tr = QLineEdit()
-        self.tr.setFixedSize(150, 30)
-        self.tc_prompt = QLabel("Cold side:")
-        self.tc_prompt.setFixedSize(150, 30)
-        self.tc = QLineEdit()
-        self.tc.setFixedSize(150, 30)
+        self.t_exp_prompt = QLabel("Expansion:")
+        self.t_exp_prompt.setFixedSize(150, 30)
+        self.t_exp = QLineEdit()
+        self.t_exp.setFixedSize(150, 30)
+        self.t_reg_prompt = QLabel("Regenerator:")
+        self.t_reg_prompt.setFixedSize(150, 30)
+        self.t_reg = QLineEdit()
+        self.t_reg.setFixedSize(150, 30)
+        self.t_com_prompt = QLabel("Compression:")
+        self.t_com_prompt.setFixedSize(150, 30)
+        self.t_com = QLineEdit()
+        self.t_com.setFixedSize(150, 30)
         
         self.additional = QLabel("Additional values")
         self.additional.setAlignment(QtCore.Qt.AlignCenter)
         self.additional.setFixedSize(750, 50)
-        self.beta_prompt = QLabel("Phase-angle \u03B2:")
-        self.beta_prompt.setFixedSize(150, 30)
-        self.beta = QLineEdit()
-        self.beta.setFixedSize(150, 30)
-        self.m_prompt = QLabel("Mass:")
-        self.m_prompt.setFixedSize(150, 30)
-        self.m = QLineEdit()
-        self.m.setFixedSize(150, 30)
+        self.phaseangle_prompt = QLabel("Phase-angle \u03B2:")
+        self.phaseangle_prompt.setFixedSize(150, 30)
+        self.phaseangle = QLineEdit()
+        self.phaseangle.setFixedSize(150, 30)
+        self.mass_prompt = QLabel("Mass:")
+        self.mass_prompt.setFixedSize(150, 30)
+        self.mass = QLineEdit()
+        self.mass.setFixedSize(150, 30)
         self.gas_constant_prompt = QLabel("Gas constant:")
         self.gas_constant_prompt.setFixedSize(150, 30)
         self.gas_constant = QLineEdit()
@@ -234,16 +234,16 @@ class ManualInput(QDialog):
         layout.addWidget(self.v_cyl, 2, 3, 1, 1)
         layout.addWidget(self.v_reg_prompt, 3, 1, 1, 1)
         layout.addWidget(self.v_reg, 3, 3, 1, 1)
-        layout.addWidget(self.v_c_avg_prompt, 4, 1, 1, 1)
-        layout.addWidget(self.v_c_avg, 4, 3, 1, 1)
+        layout.addWidget(self.v_cyl_avg_prompt, 4, 1, 1, 1)
+        layout.addWidget(self.v_cyl_avg, 4, 3, 1, 1)
         
         layout.addWidget(self.temperature, 5, 0, 1, 5)
-        layout.addWidget(self.th_prompt, 6, 1, 1, 1)
-        layout.addWidget(self.th, 6, 3, 1, 1)
-        layout.addWidget(self.tr_prompt, 7, 1, 1, 1)
-        layout.addWidget(self.tr, 7, 3, 1, 1)
-        layout.addWidget(self.tc_prompt, 8, 1, 1, 1)
-        layout.addWidget(self.tc, 8, 3, 1, 1)
+        layout.addWidget(self.t_exp_prompt, 6, 1, 1, 1)
+        layout.addWidget(self.t_exp, 6, 3, 1, 1)
+        layout.addWidget(self.t_reg_prompt, 7, 1, 1, 1)
+        layout.addWidget(self.t_reg, 7, 3, 1, 1)
+        layout.addWidget(self.t_com_prompt, 8, 1, 1, 1)
+        layout.addWidget(self.t_com, 8, 3, 1, 1)
 
         layout.addWidget(self.area, 9, 0, 1, 5)
         layout.addWidget(self.piston_rod_area_prompt, 10, 1, 1, 1)
@@ -252,12 +252,12 @@ class ManualInput(QDialog):
         layout.addWidget(self.piston_cyl_area, 11, 3, 1, 1)
         
         layout.addWidget(self.additional, 12, 0, 1, 5)
-        layout.addWidget(self.m_prompt, 13, 1, 1, 1)
-        layout.addWidget(self.m, 13, 3, 1, 1)
+        layout.addWidget(self.mass_prompt, 13, 1, 1, 1)
+        layout.addWidget(self.mass, 13, 3, 1, 1)
         layout.addWidget(self.gas_constant_prompt, 14, 1, 1, 1)
         layout.addWidget(self.gas_constant, 14, 3, 1, 1)
-        layout.addWidget(self.beta_prompt, 15, 1, 1, 1)
-        layout.addWidget(self.beta, 15, 3, 1, 1)
+        layout.addWidget(self.phaseangle_prompt, 15, 1, 1, 1)
+        layout.addWidget(self.phaseangle, 15, 3, 1, 1)
         
         layout.addWidget(QLabel(""), 16, 1, 1, 5)
         
@@ -284,7 +284,7 @@ class ManualInput(QDialog):
         """Navigates the user to the 'VisualizationWindow'-window if the input-data is valid.
         """
         
-        valueList = [self.gas_constant, self.m, self.th, self.tr, self.tc, self.v_cyl, self.v_reg, self.v_c_avg, self.piston_rod_area, self.piston_cyl_area, self.beta]
+        valueList = [self.gas_constant, self.mass, self.t_exp, self.t_reg, self.t_com, self.v_cyl, self.v_reg, self.v_cyl_avg, self.piston_rod_area, self.piston_cyl_area, self.phaseangle, self.gas_constant]
         values = []
 
         for item in valueList:
@@ -293,6 +293,20 @@ class ManualInput(QDialog):
         isApproved = checkValues(values)
 
         if (isApproved):
+            values = {
+                "gasconstant": self.gas_constant.text(),
+                "mass": self.mass.text(),
+                "tExpansion": self.t_exp.text(),
+                "tRegenerator": self.t_reg.text(),
+                "tCompression": self.t_com.text(),
+                "vSwept": self.v_cyl.text(),
+                "vRegenerator": self.v_reg.text(),
+                "vAverage": self.v_cyl_avg.text(),
+                "aPiston": self.piston_rod_area.text(),
+                "aCylinder": self.piston_cyl_area.text(),
+                "phaseangle": self.phaseangle.text()
+            }
+            
             writeToJSON("inputValues", values)
             self.stateVisualization = VisualizationWindow(self)
             self.stateVisualization.show()
@@ -618,7 +632,7 @@ class ResultWindow(QDialog):
         self.combinedplots_message.setFixedSize(750, 100)
         self.combinedplots_message.setObjectName("combinedplots_message")
 
-        self.csv_message = QLabel("The results are stored under: 'results/" + self.schmidtResultsFilename + ".pdf', 'results/" + self.adiabaticResultsFilename + ".pdf'")
+        self.csv_message = QLabel("The results are stored under: 'results/" + self.schmidtResultsFilename + ".csv', 'results/" + self.adiabaticResultsFilename + ".csv'")
         self.csv_message.setAlignment(QtCore.Qt.AlignCenter)
         self.csv_message.setFixedSize(750, 100)
         self.csv_message.setObjectName("result_message")

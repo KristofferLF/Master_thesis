@@ -34,9 +34,7 @@ def readFromJSON(fileName):
         "vAverage": jsonData['volume'][2]['average'],
         "aPiston": jsonData['area'][0]['piston'],
         "aCylinder": jsonData['area'][1]['cylinder'],
-        "phaseangle": jsonData['additional'][2]['phaseangle'],
-        "constant_pressure_heat_capacity": jsonData['additional'][3]['constant_pressure_heat_capacity'],
-        "constant_volume_heat_capacity": jsonData['additional'][4]['constant_volume_heat_capacity']
+        "phaseangle": jsonData['additional'][2]['phaseangle']
     }
         
     jsonFile.close()
@@ -51,22 +49,17 @@ def writeToJSON(fileName, values):
         values (Dictionary): Dictionary containing the values to be stored in a JSON-file.
     """
     
-    try:
-        gasConstant = str(values["gasconstant"])
-        mass = str(values["mass"])
-        tHot = str(values["tExpansion"])
-        tReg = str(values["tRegenerator"])
-        tCold = str(values["tCompression"])
-        sweptVol = str(values["vSwept"])
-        regVol = str(values["vRegenerator"])
-        avgVol = str(values["vAverage"])
-        rodArea = str(values["aPiston"])
-        cylArea = str(values["aCylinder"])
-        phaseAngle = str(values["phaseangle"])
-        constant_pressure_heat_capacity = str(values["constant_pressure_heat_capacity"])
-        constant_volume_heat_capacity = str(values["constant_volume_heat_capacity"])
-    except:
-        print("Missing required values.")
+    gasConstant = str(values["gasconstant"])
+    mass = str(values["mass"])
+    tHot = str(values["tExpansion"])
+    tReg = str(values["tRegenerator"])
+    tCold = str(values["tCompression"])
+    sweptVol = str(values["vSwept"])
+    regVol = str(values["vRegenerator"])
+    avgVol = str(values["vAverage"])
+    rodArea = str(values["aPiston"])
+    cylArea = str(values["aCylinder"])
+    phaseAngle = str(values["phaseangle"])
     
     jsonString = ("{\"volume\":[{\"swept\":" + sweptVol + 
                   "},{\"regenerator\":" + regVol +
@@ -78,9 +71,7 @@ def writeToJSON(fileName, values):
                   "},{\"compression\":" + tCold +
                   "}],\"additional\":[{\"gasconstant\":" + gasConstant +
                   "},{\"mass\":" + mass +
-                  "},{\"phaseangle\":" + phaseAngle +
-                  "},{\"constant_pressure_heat_capacity\":" + constant_pressure_heat_capacity +
-                  "},{\"constant_volume_heat_capacity\":" + constant_volume_heat_capacity + "}]}")
+                  "},{\"phaseangle\":" + phaseAngle + "}]}")
     try:    
         with open("assets/" + fileName + ".json", 'w') as jsonFile:
             print(fileName)
