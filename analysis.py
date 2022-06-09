@@ -66,11 +66,11 @@ def schmidtAnalysis(values):
     cycleAnalysis[18:,7] = cycleAnalysis[:19,6]
 
     for i in range(1,37):
-        W_1 = P_1 * (cycleAnalysis[i,2] - cycleAnalysis[i-1,2]) / 1000
-        cycleAnalysis[i,8] = W_1            # [Nm]
-        W_2 = P_1 * (cycleAnalysis[i,3] - cycleAnalysis[i-1,3]) / 1000
-        cycleAnalysis[i,9] = W_2            # [Nm]
-        W_R = W_1 + W_2
+        W_com = P_1 * (cycleAnalysis[i,2] - cycleAnalysis[i-1,2]) / 1000
+        cycleAnalysis[i,8] = W_com            # [Nm]
+        W_exp = P_1 * (cycleAnalysis[i,3] - cycleAnalysis[i-1,3]) / 1000
+        cycleAnalysis[i,9] = W_exp            # [Nm]
+        W_R = W_com + W_exp
         cycleAnalysis[i,10] = W_R           # [Nm]
         F_O = cycleAnalysis[i,6] * piston_cyl_area
         cycleAnalysis[i,11] = F_O           # [N]
@@ -144,9 +144,9 @@ def plotSchmidtAnalysis(resultFileName, cycleAnalysis):
     plt.figure()
     plt.clf()
 
-    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,8] / 1000, color='b', label="W_1")
-    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,9] / 1000, color='r', label="W_2")
-    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,10] / 1000, color='g', label="W_R")
+    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,8] / 1000, color='b', label="W_Com")
+    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,9] / 1000, color='r', label="W_Exp")
+    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,10] / 1000, color='g', label="W_Reg")
 
     plt.xticks(np.arange(0, 390, 30))
     plt.xlabel("Degrees")
@@ -206,8 +206,8 @@ def createInternalSchmidtPlots(window, cycleAnalysis):
     # Volume variation
     volumeVariation = window.canvas.addPlot(name="Volume variation", title="Volume variation")
     volumeVariation.addLegend()
-    compressionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2], pen=pg.mkColor(205, 92, 92), name="Compression area")
-    expansionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2] + cycleAnalysis[:,3], pen=pg.mkColor(135, 206, 250), name="Expansion area")
+    compressionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2], pen=pg.mkColor(205, 92, 92), name="Expansion area")
+    expansionCurve = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=cycleAnalysis[:,2] + cycleAnalysis[:,3], pen=pg.mkColor(135, 206, 250), name="Compression area")
     horizontalLine = pg.PlotCurveItem(x=cycleAnalysis[:,0], y=np.zeros_like(cycleAnalysis[:,0]))
     filledCompressionArea = pg.FillBetweenItem(horizontalLine, compressionCurve, pg.mkColor(135, 206, 250))
     filledTotalArea = pg.FillBetweenItem(compressionCurve, expansionCurve, pg.mkColor(205, 92, 92))
@@ -255,9 +255,9 @@ def createInternalSchmidtPlots(window, cycleAnalysis):
     # Mechanical work
     mechanicalWork = window.canvas.addPlot(name="Mechanical work", title="Mechanical work", row=2, col=0)
     mechanicalWork.addLegend()
-    w1 = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,8] / 1000, pen='b', name="W_1")
-    w2 = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,9] / 1000, pen='r', name="W_2")
-    w3 = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,10] / 1000, pen='g', name="W_3")
+    w1 = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,8] / 1000, pen='b', name="W_Com")
+    w2 = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,9] / 1000, pen='r', name="W_Exp")
+    w3 = pg.PlotCurveItem(x=cycleAnalysis[1:,0], y=cycleAnalysis[1:,10] / 1000, pen='g', name="W_Reg")
     mechanicalWork.addItem(w1)
     mechanicalWork.addItem(w2)
     mechanicalWork.addItem(w3)
@@ -444,9 +444,9 @@ def plotAdiabaticAnalysis(resultFileName, cycleAnalysis):
     plt.figure()
     plt.clf()
 
-    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,8] / 1000, color='b', label="dWe")
-    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,9] / 1000, color='r', label="dWc")
-    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,10] / 1000, color='g', label="dW")
+    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,8] / 1000, color='b', label="W_Com")
+    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,9] / 1000, color='r', label="W_Exp")
+    plt.plot(cycleAnalysis[1:,0], cycleAnalysis[1:,10] / 1000, color='g', label="W_Reg")
 
     plt.xticks(np.arange(0, 390, 30))
     plt.xlabel("Degrees")
@@ -546,13 +546,13 @@ def plotCombinedAnalysis(resultFileName, schmidtResults, adiabaticResults):
     plt.figure()
     plt.clf()
     
-    plt.plot(schmidtResults[1:,0], schmidtResults[1:,8] / 1000, color='darkviolet', label="Schmidt: W_1")
-    plt.plot(schmidtResults[1:,0], schmidtResults[1:,9] / 1000, color='b', label="Schmidt: W_2")
-    plt.plot(schmidtResults[1:,0], schmidtResults[1:,10] / 1000, color='cyan', label="Schmidt: W_R")
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,8] / 1000, color='darkviolet', label="Schmidt: W_Com")
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,9] / 1000, color='b', label="Schmidt: W_Exp")
+    plt.plot(schmidtResults[1:,0], schmidtResults[1:,10] / 1000, color='cyan', label="Schmidt: W_Reg")
 
-    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,8] / 1000, color='r', label="Adiabatic: dWe")
-    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,9] / 1000, color='darkorange', label="Adiabatic: dWc")
-    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,10] / 1000, color='y', label="Adiabatic: dW")
+    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,8] / 1000, color='r', label="Adiabatic: W_com")
+    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,9] / 1000, color='darkorange', label="Adiabatic: W_Exp")
+    plt.plot(adiabaticResults[1:,0], adiabaticResults[1:,10] / 1000, color='y', label="Adiabatic: W_Reg")
 
     plt.xticks(np.arange(0, 390, 30))
     plt.xlabel("Degrees")
